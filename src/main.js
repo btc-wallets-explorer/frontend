@@ -29,8 +29,6 @@ const color = scaleOrdinal(schemeCategory10);
 
 // load the data
 const generate = (model, settings) => {
-  console.log(model);
-
   const nodeMap = {};
 
   const times = model.nodes.map((n) => n.tx.time);
@@ -39,10 +37,10 @@ const generate = (model, settings) => {
   const timeInterval = timeMax - timeMin;
 
   const graph = { nodes: {}, links: {} };
-  graph.nodes = model.nodes.map((x) => ({
-    ...x,
-    x: ((x.tx.time - timeMin) / timeInterval) * width,
-    y: x.tx.confirmations % height,
+  graph.nodes = model.nodes.map((n) => ({
+    ...n,
+    x: ((n.tx.time - timeMin) / timeInterval) * width,
+    y: n.tx.size % height,
   }));
   graph.nodes.forEach((x) => { nodeMap[x.name] = x; });
   graph.links = model.links.map((x) => ({
@@ -76,7 +74,11 @@ const generate = (model, settings) => {
     .text((d) => `${d.id}`);
 
   const link = linkHorizontal()
-    .source((d) => ({ ...d.source, x: d.source.x + nodeWidth }));
+    .source((d) => ({
+      ...d.source,
+      x: d.source.x + nodeWidth,
+      y: d.source.y + 5,
+    }));
 
   svg.append('g').selectAll('.link')
     .data(graph.links)
