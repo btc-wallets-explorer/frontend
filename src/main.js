@@ -5,6 +5,9 @@ import {
 const margin = {
   top: 10, right: 10, bottom: 10, left: 10,
 };
+
+const nodeWidth = 20;
+
 const width = 1200 - margin.left - margin.right;
 const height = 740 - margin.top - margin.bottom;
 
@@ -26,6 +29,8 @@ const color = scaleOrdinal(schemeCategory10);
 
 // load the data
 const generate = (model, settings) => {
+  console.log(model);
+
   const nodeMap = {};
 
   const times = model.nodes.map((n) => n.tx.time);
@@ -45,6 +50,7 @@ const generate = (model, settings) => {
     target: nodeMap[x.target],
     value: x.value,
     wallet: x.wallet,
+    info: x.info,
   }));
 
   // add in the nodes
@@ -58,7 +64,7 @@ const generate = (model, settings) => {
   // add the rectangles for the nodes
   nodes.append('rect')
     .attr('height', 10)
-    .attr('width', 20)
+    .attr('width', nodeWidth)
     .style('fill', () => 'gray')
     .on('click', (event, node) => {
       if (event.ctrlKey) {
@@ -67,9 +73,10 @@ const generate = (model, settings) => {
     })
     .style('stroke', (d) => rgb(d.color).darker(2))
     .append('title')
-    .text((d) => `${d.id}\n${d.value}`);
+    .text((d) => `${d.id}`);
 
-  const link = linkHorizontal();
+  const link = linkHorizontal()
+    .source((d) => ({ ...d.source, x: d.source.x + nodeWidth }));
 
   svg.append('g').selectAll('.link')
     .data(graph.links)
@@ -78,7 +85,10 @@ const generate = (model, settings) => {
       .x((d) => d.x)
       .y((d) => d.y))
     .attr('fill', 'none')
-    .attr('stroke', (d) => color(d.wallet));
+    .attr('stroke-width', (d) => d.value * 20)
+    .attr('stroke', (d) => color(d.wallet))
+    .append('title')
+    .text((d) => `${d.wallet}  ${JSON.stringify(d.info, null, 1)}  ${d.value}`);
 };
 
 const ws = new WebSocket('ws://localhost:8080');

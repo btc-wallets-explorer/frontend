@@ -11,7 +11,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/backend/main.js"
+            "program": "${workspaceFolder}/webpack.config.js"
         }
     ]
 }
