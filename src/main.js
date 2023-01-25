@@ -1,5 +1,5 @@
 import {
-  select, zoom, linkRadial, rgb,
+  linkHorizontal, rgb, scaleOrdinal, schemeCategory10, select, zoom,
 } from 'd3';
 
 const margin = {
@@ -18,27 +18,29 @@ const svg = select('#chart').append('svg')
     `translate(${margin.left},${margin.top})`,
   );
 
-const handleZoom = (e) => g.attr('transform', e.transform);
+const handleZoom = (e) => svg.attr('transform', e.transform);
 const zoomBehavior = zoom().on('zoom', handleZoom);
 select('svg').call(zoomBehavior);
 
+const color = scaleOrdinal(schemeCategory10);
+
 // load the data
-const generate = (graph, settings) => {
+const generate = (model, settings) => {
   const nodeMap = {};
 
-  const times = graph.nodes.map((n) => n.tx.time);
+  const times = model.nodes.map((n) => n.tx.time);
   const timeMin = Math.min(...times);
   const timeMax = Math.max(...times);
   const timeInterval = timeMax - timeMin;
-  console.log(timeMin, timeMax, timeInterval);
 
-  graph.nodes = graph.nodes.map((x) => ({
+  const graph = { nodes: {}, links: {} };
+  graph.nodes = model.nodes.map((x) => ({
     ...x,
-    x: (x.tx.time - timeMin) / timeInterval * width,
+    x: ((x.tx.time - timeMin) / timeInterval) * width,
     y: x.tx.confirmations % height,
   }));
   graph.nodes.forEach((x) => { nodeMap[x.name] = x; });
-  graph.links = graph.links.map((x) => ({
+  graph.links = model.links.map((x) => ({
     source: nodeMap[x.source],
     target: nodeMap[x.target],
     value: x.value,
@@ -46,7 +48,7 @@ const generate = (graph, settings) => {
   }));
 
   // add in the nodes
-  const node = svg.append('g').selectAll('.node')
+  const nodes = svg.append('g').selectAll('.node')
     .data(graph.nodes)
     .enter()
     .append('g')
@@ -54,34 +56,29 @@ const generate = (graph, settings) => {
     .attr('transform', (d) => `translate(${d.x},${d.y})`);
 
   // add the rectangles for the nodes
-  node.append('rect')
+  nodes.append('rect')
     .attr('height', 10)
     .attr('width', 20)
-    .style('fill', (d) => 'gray')
-    .on('click', (d) => {
-      // eslint-disable-next-line no-restricted-globals
+    .style('fill', () => 'gray')
+    .on('click', (event, node) => {
       if (event.ctrlKey) {
-        window.open(settings['block-explorer-url'] + d.name, '_blank');
+        window.open(settings['block-explorer-url'] + node.name, '_blank');
       }
     })
     .style('stroke', (d) => rgb(d.color).darker(2))
     .append('title')
     .text((d) => `${d.id}\n${d.value}`);
 
-  const link = linkRadial();
+  const link = linkHorizontal();
 
-  const links = svg.append('g').selectAll('.link')
+  svg.append('g').selectAll('.link')
     .data(graph.links)
     .join('path')
-    .attr('', link);
-
-  // .enter().append('svg:line')
-  // .attr("class", "link")
-  // .attr("style", "stroke:black")
-  // .attr("x1", d => d.source.x)
-  // .attr("y1", d => d.source.y)
-  // .attr("x2", d => d.target.x)
-  // .attr("y2", d => d.target.y)
+    .attr('d', link
+      .x((d) => d.x)
+      .y((d) => d.y))
+    .attr('fill', 'none')
+    .attr('stroke', (d) => color(d.wallet));
 };
 
 const ws = new WebSocket('ws://localhost:8080');

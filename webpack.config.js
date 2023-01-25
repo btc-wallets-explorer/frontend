@@ -7,7 +7,7 @@ const templateParameters = require('./assets/parameters.json');
 module.exports = {
   target: 'web',
   entry: {
-    app: ['./frontend/main.js'],
+    app: ['./src/main.js'],
   },
   output: {
     path: path.resolve(__dirname, '../build'),
@@ -16,7 +16,7 @@ module.exports = {
   devtool: 'inline-source-map',
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'frontend/index.html',
+      template: 'src/index.html',
       templateParameters,
     }),
     new Dotenv(),
