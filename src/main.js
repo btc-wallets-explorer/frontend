@@ -5,9 +5,9 @@ const margin = {
 };
 
 const nodeWidth = 20;
+const nodeHeight = 20;
 
 const width = 1200 - margin.left - margin.right;
-const height = 740 - margin.top - margin.bottom;
 
 // append the svg canvas to the page
 const svg = d3.select('#chart').append('svg')
@@ -34,30 +34,38 @@ const generate = (model, settings) => {
   const timeMax = Math.max(...times);
   const timeInterval = timeMax - timeMin;
 
+  // model.nodes = model.nodes.map((n) => ({ ...n, fx: ((n.tx.time - timeMin) / timeInterval) * width }));
+
   const simulation = d3.forceSimulation()
-    .force('center', d3.forceCenter(width / 2, height / 2))
+    // .force('center', d3.forceCenter(width / 2, height / 2))
     .force('charge', d3.forceManyBody())
-    .force('link', d3.forceLink().id((d) => d.id));
-  simulation.stop();
+    .force('link', d3.forceLink().id((d) => d.id))
+    .force('x', d3.forceX((n) => ((n.tx.time - timeMin) / timeInterval) * width).strength(0.1))
+    .force('y', d3.forceY(() => 0).strength(0.02));
 
   const nodes = svg.append('g').selectAll('.node')
     .data(model.nodes)
     .enter()
     .append('g');
-    // .attr('transform', (d) => `translate(${d.x},${d.y})`);
 
-  // add the rectangles for the nodes
   nodes.append('rect')
+    .call(d3.drag().on('drag', (event, d) => {
+      // eslint-disable-next-line no-param-reassign
+      d.x = event.x;
+      // eslint-disable-next-line no-param-reassign
+      d.y = event.y;
+      simulation.restart().alpha(1);
+    }))
     .attr('class', 'node_rect')
-    .attr('height', 10)
+    .attr('height', nodeHeight)
     .attr('width', nodeWidth)
     .style('fill', () => 'gray')
     .on('click', (event, node) => {
       if (event.ctrlKey) {
-        window.open(settings['block-explorer-url'] + node.name, '_blank');
+        window.open(settings['block-explorer-url'] + node.id, '_blank');
       }
     })
-    .style('stroke', (d) => d3.rgb(d.color).darker(2))
+    .style('stroke', (d) => d3.rgb(d.color).brighter(2))
     .append('title')
     .text((d) => `${d.name}`);
 
@@ -75,19 +83,17 @@ const generate = (model, settings) => {
   simulation.force('link').links(model.links);
 
   simulation.on('tick', () => {
-  // position links
     d3.selectAll('.link_line')
-      .attr('x1', (d) => d.source.x)
+      .attr('x1', (d) => d.source.x + nodeWidth)
       .attr('x2', (d) => d.target.x)
-      .attr('y1', (d) => d.source.y)
-      .attr('y2', (d) => d.target.y);
+      .attr('y1', (d) => d.source.y + nodeHeight / 2)
+      .attr('y2', (d) => d.target.y + nodeHeight / 2);
 
-    // position nodes
     d3.selectAll('.node_rect')
       .attr('x', (d) => d.x)
       .attr('y', (d) => d.y);
   });
-  simulation.alpha(1).restart();
+  simulation.alpha(0.3).restart();
 };
 
 const ws = new WebSocket('ws://localhost:8080');
