@@ -38,6 +38,7 @@ const generate = (model, settings) => {
 
   const simulation = d3.forceSimulation()
     // .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collide', d3.forceCollide().radius(15))
     .force('charge', d3.forceManyBody())
     .force('link', d3.forceLink().id((d) => d.id))
     .force('x', d3.forceX((n) => ((n.tx.time - timeMin) / timeInterval) * width).strength(0.1))
@@ -69,13 +70,21 @@ const generate = (model, settings) => {
     .append('title')
     .text((d) => `${d.name}`);
 
-  svg.append('g').selectAll('.link')
+  const linkGen = d3.linkHorizontal()
+    .source((d) => ({ ...d.source, x: d.source.x + nodeWidth, y: d.source.y + nodeHeight / 2 }))
+    .target((d) => ({ ...d.target, x: d.target.x, y: d.target.y + nodeHeight / 2 }))
+    .x((d) => d.x)
+    .y((d) => d.y);
+
+  const link = svg.append('g').selectAll('.link')
     .data(model.links)
     .enter()
-    .append('line')
-    .attr('class', 'link_line')
-    .attr('stroke-width', (d) => d.value * 20)
-    .attr('stroke', (d) => color(d.wallet))
+    // .append('line')
+    .append('path')
+    .attr('stroke-width', (d) => d.value * 30)
+    .attr('stroke', (d) => color(d.wallet));
+
+  link
     .append('title')
     .text((d) => `${d.wallet}  ${JSON.stringify(d.info, null, 1)}  ${d.value}`);
 
@@ -83,11 +92,7 @@ const generate = (model, settings) => {
   simulation.force('link').links(model.links);
 
   simulation.on('tick', () => {
-    d3.selectAll('.link_line')
-      .attr('x1', (d) => d.source.x + nodeWidth)
-      .attr('x2', (d) => d.target.x)
-      .attr('y1', (d) => d.source.y + nodeHeight / 2)
-      .attr('y2', (d) => d.target.y + nodeHeight / 2);
+    link.attr('d', linkGen);
 
     d3.selectAll('.node_rect')
       .attr('x', (d) => d.x)
