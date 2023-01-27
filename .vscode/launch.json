@@ -5,13 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Attach to Chrome",
+            "port": 9000,
+            "request": "attach",
+            "type": "chrome",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
+            "name": "Launch",
+            "program": "${workspaceFolder}/node_modules/.bin/webpack-cli",
+            "args": [
+                "server",
+                "--open",
+                "--config",
+                "webpack.config.js",
+                "--mode"
+                ,"development",
             ],
-            "program": "${workspaceFolder}/webpack.config.js"
+            "autoAttachChildProcesses": true,
+            "stopOnEntry": true
         }
     ]
 }

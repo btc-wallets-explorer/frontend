@@ -2,7 +2,15 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const templateParameters = require('./assets/parameters.json');
+
+module.exports = {
+  // Other rules...
+  plugins: [
+    new NodePolyfillPlugin(),
+  ],
+};
 
 module.exports = {
   target: 'web',
@@ -15,11 +23,17 @@ module.exports = {
   },
   devtool: 'inline-source-map',
   plugins: [
+    new NodePolyfillPlugin(),
     new HtmlWebpackPlugin({
-      template: 'src/index.html',
+      template: 'assets/index.html',
       templateParameters,
     }),
     new Dotenv(),
   ],
+
+  devServer: {
+    static: './dist',
+    port: 9000,
+  },
 
 };
