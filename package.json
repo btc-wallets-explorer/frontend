@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "start": "webpack server --open --mode=development",
+    "start": "webpack server --open --mode=development --devtool=inline-source-map",
+    "build": "webpack --mode=development",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -11,24 +12,23 @@
   "dependencies": {
     "bip32": "^2.0.6",
     "bitcoinjs-lib": "^6.1.0",
-    "copy-webpack-plugin": "^11.0.0",
     "d3": "^7.8.2",
     "d3-color": "^3.1.0",
     "d3-drag": "^3.0.0",
     "d3-force": "^3.0.0",
-    "d3-selection": "^3.0.0",
-    "dotenv-webpack": "^8.0.1",
+    "d3-selection": "^3.0.0"
+  },
+  "devDependencies": {
+    "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "swank-js": "0.0.5",
-    "webpack": "^5.75.0",
-    "webpack-node-externals": "^3.0.0",
-    "wepback": "^1.0.0"
-  },
-  "devDependencies": {
     "eslint": "^8.31.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.26.0",
+    "webpack": "^5.75.0",
+    "webpack-node-externals": "^3.0.0",
+    "wepback": "^1.0.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1"
   }
