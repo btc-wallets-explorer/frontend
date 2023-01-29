@@ -18,37 +18,24 @@ export default async (connection, wallets) => {
   };
 
   const getHists = async (addressObjs) => {
-    const histories = await Promise.all(
-      addressObjs.map(async (o) => ({
-        hash: toScriptHash(o.address),
-        info: o,
-        histories: (await getHistories(connection, { scriptHashes: [toScriptHash(o.address)] }))[0]
-          .transactions,
-      })),
-    );
+    const histories = await getHistories(connection, {
+      scriptHashes: addressObjs.map((o) => toScriptHash(o.address)),
+    });
+
+    const addressMap = Object.fromEntries(addressObjs.map((o) => [toScriptHash(o.address), o]));
 
     return Object.fromEntries(
       histories
-        .filter((h) => h.histories.length > 0)
-        .map((h) => [h.hash, h]),
+        .map((h) => ({ ...h, info: addressMap[h.scriptHash] }))
+        .filter((h) => h.transactions.length > 0)
+        .map((h) => [h.scriptHash, h]),
     );
   };
 
   const getTxs = async (txHashes) => {
-    const transactions = await Promise.all(
-      txHashes.map(async (h) => (await getTransactions(connection, { transactions: [h] }))[0]),
-    );
+    const transactions = await getTransactions(connection, { transactions: txHashes });
 
     return Object.fromEntries(transactions.map((t) => [t.txid, t]));
-  };
-
-  const getTransaction = async (transactionMap, txHash) => {
-    if (!(txHash in transactionMap)) {
-    // eslint-disable-next-line no-param-reassign, prefer-destructuring
-      transactionMap[txHash] = (await getTransactions(connection, { transactions: [txHash] }))[0];
-    }
-
-    return transactionMap[txHash];
   };
 
   const getScriptHashMapForWallet = async (wallet) => {
@@ -59,7 +46,7 @@ export default async (connection, wallets) => {
   const generateLinks = async (transactionMap, walletScriptHashMap) => {
     const histories = Object.entries(walletScriptHashMap)
       .flatMap(([wallet, o]) => Object.entries(o).flatMap(
-        ([scriptHash, v]) => v.histories.map((hist) => ({
+        ([scriptHash, v]) => v.transactions.map((hist) => ({
           wallet, scriptHash, info: v.info, txid: hist.tx_hash,
         })),
       ));
@@ -67,10 +54,11 @@ export default async (connection, wallets) => {
     // load all other transactions
     const otherTransactions = histories.flatMap(
       (h) => transactionMap[h.txid].vin.map((vin) => vin.txid),
-    );
-    await Promise.all(otherTransactions.map(
-      async (txid) => getTransaction(transactionMap, txid),
-    ));
+    ).filter((h) => !(h in transactionMap));
+
+    const otherTransactionMap = await getTxs(otherTransactions);
+    // eslint-disable-next-line no-param-reassign
+    Object.entries(otherTransactionMap).forEach(([k, v]) => { transactionMap[k] = v; });
 
     const incomingTxos = histories.flatMap((h) => transactionMap[h.txid].vin
       .map((vin) => ({ ...h, vin, vout: transactionMap[vin.txid].vout[vin.vout] })))
@@ -86,7 +74,7 @@ export default async (connection, wallets) => {
   ));
 
   const txHashes = Object.values(walletScriptHashMap)
-    .flatMap((walletMap) => Object.values(walletMap).flatMap((h) => h.histories))
+    .flatMap((walletMap) => Object.values(walletMap).flatMap((h) => h.transactions))
     .map((h) => h.tx_hash);
 
   const transactionMap = await getTxs(txHashes);
