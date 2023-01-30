@@ -78,11 +78,11 @@ export default async (model, settings) => {
     // .append('line')
     .append('path')
     .attr('stroke-width', (d) => d.value * 30)
-    .attr('stroke', (d) => color(d.wallet));
+    .attr('stroke', (d) => color(d.info.wallet));
 
   link
     .append('title')
-    .text((d) => `${d.wallet}  ${JSON.stringify(d.info, null, 1)}  ${d.value}`);
+    .text((d) => `${d.info.wallet}  ${JSON.stringify(d.info, null, 1)}  ${d.value}`);
 
   simulation.nodes(model.nodes);
   simulation.force('link').links(model.links);

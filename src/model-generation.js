@@ -3,34 +3,30 @@ import range from './utils/helpers';
 import { getHistories, getTransactions } from './api';
 
 export default async (connection, wallets) => {
-  const getAddresses = (wallet) => {
+  const createAddresses = (wallet) => {
     const getAddressFn = 'xpub' in wallet ? getAddress : getAddressForMultisig;
     const xpubInfo = 'xpub' in wallet ? wallet.xpub : wallet.xpubs;
 
-    const objs = [0, 1].map((isChange) => range(100).map((index) => ({
+    return [0, 1].map((isChange) => range(100).map((index) => ({
       address: getAddressFn(xpubInfo, wallet.type, index, isChange),
       isChange,
       index,
       type: wallet.type,
+      wallet: wallet.name,
     }))).flat();
-
-    return Object.fromEntries(objs.map((o) => [o.address, o]));
   };
 
-  const getHists = async (addressObjs) => {
+  const toHistories = async (addresses) => {
     const histories = await getHistories(
       connection,
-      addressObjs.map((o) => toScriptHash(o.address)),
+      addresses.map((o) => toScriptHash(o.address)),
     );
 
-    const addressMap = Object.fromEntries(addressObjs.map((o) => [toScriptHash(o.address), o]));
+    const addressMap = Object.fromEntries(addresses.map((o) => [toScriptHash(o.address), o]));
 
-    return Object.fromEntries(
-      histories
-        .map((h) => ({ ...h, info: addressMap[h.scriptHash] }))
-        .filter((h) => h.transactions.length > 0)
-        .map((h) => [h.scriptHash, h]),
-    );
+    return histories
+      .map((h) => ({ ...h, info: addressMap[h.scriptHash] }))
+      .filter((h) => h.transactions.length > 0);
   };
 
   const getTxs = async (txHashes) => {
@@ -39,18 +35,12 @@ export default async (connection, wallets) => {
     return Object.fromEntries(transactions.map((t) => [t.txid, t]));
   };
 
-  const getScriptHashMapForWallet = async (wallet) => {
-    const addressMap = getAddresses(wallet);
-    return getHists(Object.values(addressMap));
-  };
-
-  const generateLinks = async (transactionMap, walletScriptHashMap) => {
-    const histories = Object.entries(walletScriptHashMap)
-      .flatMap(([wallet, o]) => Object.entries(o).flatMap(
-        ([scriptHash, v]) => v.transactions.map((hist) => ({
-          wallet, scriptHash, info: v.info, txid: hist.tx_hash,
-        })),
-      ));
+  const generateLinks = async (transactionMap, scriptHashes) => {
+    const histories = scriptHashes.flatMap(
+      (v) => v.transactions.map((hist) => ({
+        txid: hist.tx_hash, ...v,
+      })),
+    );
 
     // load all other transactions
     const otherTransactions = histories.flatMap(
@@ -70,20 +60,17 @@ export default async (connection, wallets) => {
     }));
   };
 
-  const walletScriptHashMap = Object.fromEntries(await Promise.all(
-    Object.keys(wallets).map(async (w) => [w, await getScriptHashMapForWallet(wallets[w])]),
-  ));
+  const addresses = wallets.flatMap((w) => createAddresses(w));
+  const scriptHashes = await toHistories(addresses);
 
-  const txHashes = Object.values(walletScriptHashMap)
-    .flatMap((walletMap) => Object.values(walletMap).flatMap((h) => h.transactions))
-    .map((h) => h.tx_hash);
+  const txHashes = scriptHashes.flatMap((h) => h.transactions).map((h) => h.tx_hash);
 
   const transactionMap = await getTxs(txHashes);
 
   const nodes = Object.values(transactionMap).map(
     (tx) => ({ name: tx.txid.slice(0, 4), id: tx.txid, tx }),
   );
-  const links = await generateLinks(transactionMap, walletScriptHashMap);
+  const links = await generateLinks(transactionMap, scriptHashes);
 
   const model = { nodes, links };
 
