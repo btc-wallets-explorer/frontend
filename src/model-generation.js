@@ -18,9 +18,10 @@ export default async (connection, wallets) => {
   };
 
   const getHists = async (addressObjs) => {
-    const histories = await getHistories(connection, {
-      scriptHashes: addressObjs.map((o) => toScriptHash(o.address)),
-    });
+    const histories = await getHistories(
+      connection,
+      addressObjs.map((o) => toScriptHash(o.address)),
+    );
 
     const addressMap = Object.fromEntries(addressObjs.map((o) => [toScriptHash(o.address), o]));
 
@@ -33,7 +34,7 @@ export default async (connection, wallets) => {
   };
 
   const getTxs = async (txHashes) => {
-    const transactions = await getTransactions(connection, { transactions: txHashes });
+    const transactions = await getTransactions(connection, txHashes);
 
     return Object.fromEntries(transactions.map((t) => [t.txid, t]));
   };
