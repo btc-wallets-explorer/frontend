@@ -12,6 +12,13 @@
             "webRoot": "${workspaceFolder}"
         },
         {
+            "name": "Attach to Chrome (Tests)",
+            "port": 9333,
+            "request": "attach",
+            "type": "chrome",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
