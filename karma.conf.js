@@ -4,7 +4,6 @@ module.exports = (config) => {
   config.set({
     frameworks: ['jasmine', 'webpack', 'iframes'],
     files: [
-      'test/test.test.js',
       { pattern: 'test/**/*.test.js' },
     ],
     exclude: [
