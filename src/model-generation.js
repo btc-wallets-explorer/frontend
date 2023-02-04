@@ -1,6 +1,6 @@
 import { getAddress, getAddressForMultisig, toScriptHash } from './utils/bitcoin';
 import range from './utils/helpers';
-import { getHistories, getTransactions, getUTXOs } from './api';
+import { getHistories, getTransactions, getUTXOs } from '../test/mocks/api.mock';
 
 export default async (connection, wallets) => {
   const createAddresses = (wallet) => {
