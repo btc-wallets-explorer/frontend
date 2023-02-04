@@ -75,7 +75,7 @@ export default async (model, settings) => {
     .style('fill', (d) => colorNodes(d.type))
     .on('click', (event, node) => {
       if (event.ctrlKey) {
-        window.open(settings['block-explorer-url'] + node.id, '_blank');
+        window.open(settings['block-explorer-url'] + node.id.slice(4), '_blank');
       }
     })
     .style('stroke', (d) => d3.rgb(d.color).brighter(2))
