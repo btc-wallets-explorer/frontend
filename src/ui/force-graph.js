@@ -24,20 +24,36 @@ export default async (model, settings) => {
   const zoomBehavior = d3.zoom().on('zoom', handleZoom);
   d3.select('svg').call(zoomBehavior);
 
-  const color = d3.scaleOrdinal(d3.schemeCategory10);
+  const colorNodes = d3.scaleOrdinal(d3.schemeCategory10);
+  const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
 
   // load the data
-  const times = model.nodes.map((n) => n.tx.time);
+  const times = model.nodes
+    .filter((n) => n.type === 'txo')
+    .map((n) => n.tx.time);
   const timeMin = Math.min(...times);
   const timeMax = Math.max(...times);
   const timeInterval = timeMax - timeMin;
+
+  const calcForceX = (node) => {
+    switch (node.type) {
+      case 'txo':
+        return ((node.tx.time - timeMin) / timeInterval) * width;
+      case 'utxo':
+        return width;
+      default:
+        console.log(node);
+
+        return 0;
+    }
+  };
 
   const simulation = d3.forceSimulation()
     // .force('center', d3.forceCenter(width / 2, height / 2))
     .force('collide', d3.forceCollide().radius(15))
     .force('charge', d3.forceManyBody())
     .force('link', d3.forceLink().id((d) => d.id))
-    .force('x', d3.forceX((n) => ((n.tx.time - timeMin) / timeInterval) * width).strength(0.1))
+    .force('x', d3.forceX(calcForceX).strength(0.1))
     .force('y', d3.forceY(() => 0).strength(0.02));
 
   const nodes = svg.append('g').selectAll('.node')
@@ -56,7 +72,7 @@ export default async (model, settings) => {
     .attr('class', 'node_rect')
     .attr('height', nodeHeight)
     .attr('width', nodeWidth)
-    .style('fill', () => 'gray')
+    .style('fill', (d) => colorNodes(d.type))
     .on('click', (event, node) => {
       if (event.ctrlKey) {
         window.open(settings['block-explorer-url'] + node.id, '_blank');
@@ -77,8 +93,8 @@ export default async (model, settings) => {
     .enter()
     // .append('line')
     .append('path')
-    .attr('stroke-width', (d) => d.value * 30)
-    .attr('stroke', (d) => color(d.info.wallet));
+    .attr('stroke-width', (d) => (d.type === 'txo' ? d.value * 30 : (d.value * 30) / 100000000))
+    .attr('stroke', (d) => colorLinks(d.info.wallet));
 
   link
     .append('title')

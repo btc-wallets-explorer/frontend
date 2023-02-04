@@ -36,3 +36,4 @@ export const getSettings = getTemplate('get.settings');
 
 export const getHistories = getTemplate('get.histories');
 export const getTransactions = getTemplate('get.transactions');
+export const getUTXOs = getTemplate('get.utxos');

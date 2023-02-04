@@ -1,6 +1,6 @@
 import { getAddress, getAddressForMultisig, toScriptHash } from './utils/bitcoin';
 import range from './utils/helpers';
-import { getHistories, getTransactions } from './api';
+import { getHistories, getTransactions, getUTXOs } from './api';
 
 export default async (connection, wallets) => {
   const createAddresses = (wallet) => {
@@ -35,7 +35,37 @@ export default async (connection, wallets) => {
     return Object.fromEntries(transactions.map((t) => [t.txid, t]));
   };
 
-  const generateLinks = async (transactionMap, scriptHashes) => {
+  const generateUTXOLinks = async (scriptHashes) => {
+    const scriptHashMap = Object.fromEntries(scriptHashes.map((obj) => [obj.scriptHash, obj]));
+    const unspent = await getUTXOs(connection, scriptHashes.map((h) => h.scriptHash));
+
+    return unspent
+      .flatMap((u) => u.utxos.map((utxo) => ({
+        type: 'utxo',
+        source: `txo:${utxo.tx_hash}`,
+        target: `utxo:${u.scriptHash}`,
+        utxo,
+        value: utxo.value,
+        info: scriptHashMap[u.scriptHash],
+      })));
+  };
+
+  const generateUTXONodes = (links) => links
+    .filter((l) => l.type === 'utxo')
+    .map((l) => ({
+      id: l.target,
+      name: l.target.slice(0, 4),
+      type: 'utxo',
+    }));
+
+  const generateTXONodes = (transactionMap) => Object.values(transactionMap).map((tx) => ({
+    type: 'txo',
+    name: tx.txid.slice(0, 4),
+    id: `txo:${tx.txid}`,
+    tx,
+  }));
+
+  const generateTXOs = async (transactionMap, scriptHashes) => {
     const histories = scriptHashes.flatMap(
       (v) => v.transactions.map((hist) => ({
         txid: hist.tx_hash, ...v,
@@ -56,7 +86,11 @@ export default async (connection, wallets) => {
       .filter((txo) => txo.vout.scriptPubKey.address === txo.info.address);
 
     return incomingTxos.map((txo) => ({
-      ...txo, source: txo.vin.txid, target: txo.txid, value: txo.vout.value,
+      type: 'txo',
+      ...txo,
+      source: `txo:${txo.vin.txid}`,
+      target: `txo:${txo.txid}`,
+      value: txo.vout.value,
     }));
   };
 
@@ -66,11 +100,14 @@ export default async (connection, wallets) => {
   const txHashes = scriptHashes.flatMap((h) => h.transactions).map((h) => h.tx_hash);
 
   const transactionMap = await getTxs(txHashes);
+  const txoNodes = generateTXONodes(transactionMap);
 
-  const nodes = Object.values(transactionMap).map(
-    (tx) => ({ name: tx.txid.slice(0, 4), id: tx.txid, tx }),
-  );
-  const links = await generateLinks(transactionMap, scriptHashes);
+  const utxoLinks = await generateUTXOLinks(scriptHashes);
+  const txoLinks = await generateTXOs(transactionMap, scriptHashes);
+  const links = [...txoLinks, ...utxoLinks];
+
+  const utxoNodes = generateUTXONodes(utxoLinks);
+  const nodes = [...txoNodes, ...utxoNodes];
 
   const model = { nodes, links };
 
