@@ -1,7 +1,7 @@
 import { getAddress, toScriptHash } from '../../src/utils/bitcoin';
 
 const settings = {
-  'block-explorer-url': 'https://mempool.some.domain:8080/tx/',
+  'block-explorer-url': process.env.BLOCKEXPLORER_URL,
 };
 
 const wallets = [
