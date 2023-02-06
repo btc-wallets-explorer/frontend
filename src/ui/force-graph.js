@@ -30,6 +30,7 @@ export default async (model, settings) => {
   // load the data
   const times = model.nodes
     .filter((n) => n.type === 'txo')
+    .filter((n) => 'time' in n.tx)
     .map((n) => n.tx.time);
   const timeMin = Math.min(...times);
   const timeMax = Math.max(...times);
@@ -37,8 +38,13 @@ export default async (model, settings) => {
 
   const calcForceX = (node) => {
     switch (node.type) {
-      case 'txo':
+      case 'txo': {
+        if (!node.tx.time) {
+          // mempool transaction
+          return width;
+        }
         return ((node.tx.time - timeMin) / timeInterval) * width;
+      }
       case 'utxo':
         return width;
       default:

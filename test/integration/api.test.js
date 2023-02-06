@@ -1,4 +1,4 @@
-import { createConnection, getTransactions } from '../src/api';
+import { createConnection, getTransactions } from '../../src/api';
 
 describe('when connection exists', () => {
   const setup = async () => {

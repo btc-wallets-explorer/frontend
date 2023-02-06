@@ -1,6 +1,5 @@
-import { createConnection, getSettings, getWallets } from './api';
+import { createConnection, getSettings, getWallets } from '../test/mocks/api.mock';
 import generateModel from './model-generation';
-
 import renderForceGraph from './ui/force-graph';
 
 const main = (async () => {

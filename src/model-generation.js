@@ -1,6 +1,6 @@
 import { getAddress, getAddressForMultisig, toScriptHash } from './utils/bitcoin';
 import range from './utils/helpers';
-import { getHistories, getTransactions, getUTXOs } from './api';
+import { getHistories, getTransactions, getUTXOs } from '../test/mocks/api.mock';
 
 export default async (connection, wallets) => {
   const createAddresses = (wallet) => {
@@ -72,16 +72,17 @@ export default async (connection, wallets) => {
       })),
     );
 
-    // load all other transactions
-    const otherTransactions = histories.flatMap(
-      (h) => transactionMap[h.txid].vin.map((vin) => vin.txid),
-    ).filter((h) => !(h in transactionMap));
+    // // load all other transactions
+    // const otherTransactions = histories.flatMap(
+    //   (h) => transactionMap[h.txid].vin.map((vin) => vin.txid),
+    // ).filter((h) => !(h in transactionMap));
 
-    const otherTransactionMap = await getTxs(otherTransactions);
-    // eslint-disable-next-line no-param-reassign
-    Object.entries(otherTransactionMap).forEach(([k, v]) => { transactionMap[k] = v; });
+    // const otherTransactionMap = await getTxs(otherTransactions);
+    // // eslint-disable-next-line no-param-reassign
+    // Object.entries(otherTransactionMap).forEach(([k, v]) => { transactionMap[k] = v; });
 
     const incomingTxos = histories.flatMap((h) => transactionMap[h.txid].vin
+      .filter((vin) => vin.txid in transactionMap)
       .map((vin) => ({ ...h, vin, vout: transactionMap[vin.txid].vout[vin.vout] })))
       .filter((txo) => txo.vout.scriptPubKey.address === txo.info.address);
 
