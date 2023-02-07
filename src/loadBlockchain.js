@@ -1,10 +1,10 @@
 import { getAddress, getAddressForMultisig, toScriptHash } from './utils/bitcoin';
 import range from './utils/helpers';
 import { getHistories, getTransactions, getUTXOs } from '../test/mocks/api.mock';
-import store from './store/store';
-import { blockchainSlice, setBlockchain } from './store/blockchain.reducer';
+import store from './model/store';
+import { setBlockchain } from './model/blockchain.reducer';
 
-export default async (connection, wallets) => {
+export const generateModel = async (connection, wallets) => {
   const createAddresses = (wallet) => {
     const getAddressFn = 'xpub' in wallet ? getAddress : getAddressForMultisig;
     const xpubInfo = 'xpub' in wallet ? wallet.xpub : wallet.xpubs;

@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { createReducer, createAction } from '@reduxjs/toolkit';
 
-export const setBlockchain = createAction('set');
+export const setBlockchain = createAction('blockchain/set');
 
 export const blockchainReducer = createReducer(
   {

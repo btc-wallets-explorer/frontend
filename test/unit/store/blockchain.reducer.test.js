@@ -1,8 +1,11 @@
-import { blockchainReducer, setBlockchain } from '../../../src/store/blockchain.reducer';
-import store from '../../../src/store/store';
+import { setBlockchain } from '../../../src/model/blockchain.reducer';
+import { createNewStore } from '../../../src/model/store';
 
 describe('blockchain reducer', () => {
-  console.log(blockchainReducer.getInitialState());
+  let store;
+  beforeEach(() => {
+    store = createNewStore();
+  });
 
   it('has empty initial values', () => {
     expect(store.getState().blockchain).toEqual({
@@ -12,7 +15,7 @@ describe('blockchain reducer', () => {
     });
   });
 
-  fit('sets the model', () => {
+  it('sets the model', () => {
     const expected = {
       transactions: { tx1: { txid: 'tx1' } },
       scriptHashes: { sh1: { scriptHash: 'sh1' } },

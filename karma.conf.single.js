@@ -7,9 +7,7 @@ module.exports = (config) => {
     preprocessors: {
       'test/**/*.test.js': ['webpack'],
     },
-    reporters: ['mocha', 'verbose', 'coverage-istanbul'],
-    files: [
-      process.env.KARMA_SPEC,
-    ],
+    reporters: ['mocha'],
+    files: process.env.KARMA_SPEC.split('\n'),
   });
 };

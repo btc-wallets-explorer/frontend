@@ -14,7 +14,7 @@ module.exports = (config) => {
     reporters: ['progress', 'coverage-istanbul'],
     port: 9876,
     colors: true,
-    logLevel: config.DEBUG,
+    logLevel: config.INFO,
     autoWatch: true,
 
     browsers: [

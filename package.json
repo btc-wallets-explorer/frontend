@@ -5,7 +5,7 @@
   "scripts": {
     "start": "webpack server --open --mode=development --devtool=inline-source-map",
     "test": "CHROME_BIN=chromium karma start",
-    "test:single": "CHROME_BIN=chromium KARMA_SPEC=$(find . -iname $FILE) karma start karma.conf.single.js",
+    "test:single": "CHROME_BIN=chromium KARMA_SPEC=$(find . -iname $MATCH) karma start karma.conf.single.js",
     "build": "webpack --mode=development"
   },
   "author": "",
