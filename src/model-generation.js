@@ -35,7 +35,7 @@ export default async (connection, wallets) => {
     return Object.fromEntries(transactions.map((t) => [t.txid, t]));
   };
 
-  const generateUTXOLinks = async (scriptHashes) => {
+  const generateUTXOLinks = async (transactionMap, scriptHashes) => {
     const scriptHashMap = Object.fromEntries(scriptHashes.map((obj) => [obj.scriptHash, obj]));
     const unspent = await getUTXOs(connection, scriptHashes.map((h) => h.scriptHash));
 
@@ -45,6 +45,7 @@ export default async (connection, wallets) => {
         source: `txo:${utxo.tx_hash}`,
         target: `utxo:${u.scriptHash}`,
         utxo,
+        vout: transactionMap[utxo.tx_hash].vout[utxo.tx_pos],
         value: utxo.value,
         info: scriptHashMap[u.scriptHash],
       })));
@@ -103,7 +104,7 @@ export default async (connection, wallets) => {
   const transactionMap = await getTxs(txHashes);
   const txoNodes = generateTXONodes(transactionMap);
 
-  const utxoLinks = await generateUTXOLinks(scriptHashes);
+  const utxoLinks = await generateUTXOLinks(transactionMap, scriptHashes);
   const txoLinks = await generateTXOs(transactionMap, scriptHashes);
   const links = [...txoLinks, ...utxoLinks];
 

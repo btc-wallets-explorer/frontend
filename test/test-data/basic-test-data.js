@@ -109,7 +109,7 @@ const utxos = [
   {
     scriptHash: sh(addr('w2', 3, 0)),
     utxos: [
-      { tx_hash: 'tx4', value: 10000000 },
+      { tx_hash: 'tx4', value: 10000000, tx_pos: 0 },
     ],
   },
 ];

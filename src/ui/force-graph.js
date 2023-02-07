@@ -88,9 +88,25 @@ export default async (model, settings) => {
     .append('title')
     .text((d) => `${d.name}`);
 
+  const calcVoutYOffset = (d) => (d.source.type === 'txo'
+    ? (nodeWidth / d.source.tx.vout.length) * (d.source.tx.vout.indexOf(d.vout) + 0.5)
+    : nodeWidth / 2);
+
+  const calcVinYOffset = (d) => (d.target.type === 'txo'
+    ? (nodeWidth / d.target.tx.vin.length) * (d.target.tx.vin.indexOf(d.vin) + 0.5)
+    : nodeWidth / 2);
+
   const linkGen = d3.linkHorizontal()
-    .source((d) => ({ ...d.source, x: d.source.x + nodeWidth, y: d.source.y + nodeHeight / 2 }))
-    .target((d) => ({ ...d.target, x: d.target.x, y: d.target.y + nodeHeight / 2 }))
+    .source((d) => ({
+      ...d.source,
+      x: d.source.x + nodeWidth,
+      y: d.source.y + calcVoutYOffset(d),
+    }))
+    .target((d) => ({
+      ...d.target,
+      x: d.target.x,
+      y: d.target.y + calcVinYOffset(d),
+    }))
     .x((d) => d.x)
     .y((d) => d.y);
 
