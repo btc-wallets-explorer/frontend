@@ -1,4 +1,4 @@
-import { getAddress, toScriptHash } from '../../src/utils/bitcoin';
+import { getAddress, toScriptHash } from '../../../src/utils/bitcoin';
 
 const settings = {
   'block-explorer-url': 'https://mempool.some.domain:8080/tx/',

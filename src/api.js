@@ -21,12 +21,10 @@ export const createConnection = (url = 'ws://localhost:8080') => {
 
 const getTemplate = (requestType) => async (conn, parameters) => {
   const { requestId } = conn;
-  // eslint-disable-next-line no-param-reassign
   conn.requestId += 1;
 
   conn.ws.send(JSON.stringify({ requestId, requestType, parameters }));
   return new Promise((resolve) => {
-  // eslint-disable-next-line no-param-reassign
     conn.requestQueue[requestId] = resolve;
   });
 };

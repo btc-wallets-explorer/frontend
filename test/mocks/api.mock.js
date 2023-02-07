@@ -1,4 +1,4 @@
-import data from '../test-data/basic-test-data';
+import data from './test-data/basic-test-data';
 
 export const createConnection = () => ('api-mock');
 

@@ -1,6 +1,84 @@
 import * as d3 from 'd3';
 
-export default async (model, settings) => {
+import { Counter } from './elements/counter';
+
+window.customElements.define('counter-test', Counter);
+
+const generateUTXOLinks = (unspent, transactionMap, scriptHashes) => {
+  const scriptHashMap = Object.fromEntries(scriptHashes.map((obj) => [obj.scriptHash, obj]));
+
+  return unspent
+    .flatMap((u) => u.utxos.map((utxo) => ({
+      type: 'utxo',
+      source: `txo:${utxo.tx_hash}`,
+      target: `utxo:${u.scriptHash}`,
+      utxo,
+      vout: transactionMap[utxo.tx_hash].vout[utxo.tx_pos],
+      value: utxo.value,
+      info: scriptHashMap[u.scriptHash],
+    })));
+};
+
+const generateUTXONodes = (links) => links
+  .filter((l) => l.type === 'utxo')
+  .map((l) => ({
+    id: l.target,
+    name: l.target.slice(0, 4),
+    type: 'utxo',
+  }));
+
+const generateTXOs = (transactionMap, scriptHashes) => {
+  const histories = scriptHashes.flatMap(
+    (v) => v.transactions.map((hist) => ({
+      txid: hist.tx_hash, ...v,
+    })),
+  );
+
+  // // load all other transactions
+  // const otherTransactions = histories.flatMap(
+  //   (h) => transactionMap[h.txid].vin.map((vin) => vin.txid),
+  // ).filter((h) => !(h in transactionMap));
+
+  // const otherTransactionMap = await getTxs(otherTransactions);
+  // Object.entries(otherTransactionMap).forEach(([k, v]) => { transactionMap[k] = v; });
+
+  const incomingTxos = histories.flatMap((h) => transactionMap[h.txid].vin
+    .filter((vin) => vin.txid in transactionMap)
+    .map((vin) => ({ ...h, vin, vout: transactionMap[vin.txid].vout[vin.vout] })))
+    .filter((txo) => txo.vout.scriptPubKey.address === txo.info.address);
+
+  return incomingTxos.map((txo) => ({
+    type: 'txo',
+    ...txo,
+    source: `txo:${txo.vin.txid}`,
+    target: `txo:${txo.txid}`,
+    value: txo.vout.value,
+  }));
+};
+
+const generateTXONodes = (transactionMap) => Object.values(transactionMap).map((tx) => ({
+  type: 'txo',
+  name: tx.txid.slice(0, 4),
+  id: `txo:${tx.txid}`,
+  tx,
+}));
+
+const generateModel = (chain) => {
+  const utxoLinks = generateUTXOLinks(chain.utxos, chain.transactions, chain.scriptHashes);
+  const txoLinks = generateTXOs(chain.transactions, chain.scriptHashes);
+  const utxoNodes = generateUTXONodes(utxoLinks);
+  const txoNodes = generateTXONodes(chain.transactions);
+
+  const links = [...txoLinks, ...utxoLinks];
+
+  const nodes = [...txoNodes, ...utxoNodes];
+
+  return { nodes, links };
+};
+
+export default async (blockchain, settings) => {
+  const model = generateModel(blockchain);
+
   const margin = {
     top: 10, right: 10, bottom: 10, left: 10,
   };
@@ -13,7 +91,7 @@ export default async (model, settings) => {
   // append the svg canvas to the page
   const svg = d3.select('#chart').append('svg')
     .attr('width', '100%')
-    .attr('height', '100%')
+    .attr('height', '90%')
     .append('g')
     .attr(
       'transform',

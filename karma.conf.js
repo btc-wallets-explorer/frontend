@@ -11,10 +11,10 @@ module.exports = (config) => {
     preprocessors: {
       'test/**/*.test.js': ['webpack', 'iframes'],
     },
-    reporters: ['progress'],
+    reporters: ['progress', 'coverage-istanbul'],
     port: 9876,
     colors: true,
-    logLevel: config.LOG_INFO,
+    logLevel: config.DEBUG,
     autoWatch: true,
 
     browsers: [
@@ -30,5 +30,12 @@ module.exports = (config) => {
     singleRun: false,
     concurrency: Infinity,
     webpack: webpackConfig,
+
+    browserConsoleLogOptions: {
+      level: 'debug',
+      format: '%b %T: %m',
+      terminal: true,
+      path: 'console.log',
+    },
   });
 };
