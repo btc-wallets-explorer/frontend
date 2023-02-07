@@ -34,14 +34,6 @@ const generateTXOs = (transactionMap, scriptHashes) => {
     })),
   );
 
-  // // load all other transactions
-  // const otherTransactions = histories.flatMap(
-  //   (h) => transactionMap[h.txid].vin.map((vin) => vin.txid),
-  // ).filter((h) => !(h in transactionMap));
-
-  // const otherTransactionMap = await getTxs(otherTransactions);
-  // Object.entries(otherTransactionMap).forEach(([k, v]) => { transactionMap[k] = v; });
-
   const incomingTxos = histories.flatMap((h) => transactionMap[h.txid].vin
     .filter((vin) => vin.txid in transactionMap)
     .map((vin) => ({ ...h, vin, vout: transactionMap[vin.txid].vout[vin.vout] })))

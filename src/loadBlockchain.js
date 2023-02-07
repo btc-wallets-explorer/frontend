@@ -2,7 +2,7 @@ import { getAddress, getAddressForMultisig, toScriptHash } from './utils/bitcoin
 import range from './utils/helpers';
 import { getHistories, getTransactions, getUTXOs } from '../test/mocks/api.mock';
 import store from './store/store';
-import blockchainReducer, { blockchainSlice } from './store/blockchain.reducer';
+import { blockchainSlice, setBlockchain } from './store/blockchain.reducer';
 
 export default async (connection, wallets) => {
   const createAddresses = (wallet) => {
@@ -46,7 +46,7 @@ export default async (connection, wallets) => {
 
   const utxos = await getUTXOs(connection, scriptHashes.map((h) => h.scriptHash));
 
-  store.dispatch(blockchainSlice.actions.setModel({
+  store.dispatch(setBlockchain({
     transactions,
     scriptHashes,
     utxos,

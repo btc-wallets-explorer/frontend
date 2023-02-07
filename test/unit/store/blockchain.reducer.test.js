@@ -1,7 +1,9 @@
-import { blockchainSlice } from '../../../src/store/blockchain.reducer';
+import { blockchainReducer, setBlockchain } from '../../../src/store/blockchain.reducer';
 import store from '../../../src/store/store';
 
 describe('blockchain reducer', () => {
+  console.log(blockchainReducer.getInitialState());
+
   it('has empty initial values', () => {
     expect(store.getState().blockchain).toEqual({
       transactions: {},
@@ -17,7 +19,7 @@ describe('blockchain reducer', () => {
       utxos: { sh1: { scriptHash: 'sh1', utxos: [] } },
     };
 
-    store.dispatch(blockchainSlice.actions.setModel(expected));
+    store.dispatch(setBlockchain(expected));
 
     const actual = store.getState().blockchain;
     expect(actual).toEqual(expected);

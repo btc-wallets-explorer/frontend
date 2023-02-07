@@ -1,22 +1,13 @@
 /* eslint-disable no-param-reassign */
-import { createSlice } from '@reduxjs/toolkit';
+import { createReducer, createAction } from '@reduxjs/toolkit';
 
-export const blockchainSlice = createSlice({
-  name: 'blockchain',
-  initialState: {
+export const setBlockchain = createAction('set');
+
+export const blockchainReducer = createReducer(
+  {
     transactions: {},
     scriptHashes: {},
     utxos: {},
   },
-  reducers: {
-    setModel: (state, action) => {
-      state.transactions = action.payload.transactions;
-      state.scriptHashes = action.payload.scriptHashes;
-      state.utxos = action.payload.utxos;
-    },
-  },
-});
-
-export const { setModel } = blockchainSlice.actions;
-
-export default blockchainSlice.reducer;
+  (builder) => builder.addCase(setBlockchain, (state, action) => action.payload),
+);
