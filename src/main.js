@@ -1,3 +1,4 @@
+import watch from 'redux-watch';
 import renderForceGraph from './ui/force-graph';
 
 import { createConnection, getSettings, getWallets } from '../test/mocks/api.mock';
@@ -13,14 +14,17 @@ const main = (async () => {
   const fetchData = async () => {
     const settings = await getSettings(connection);
     store.dispatch(setSettings(settings));
+
     const wallets = await getWallets(connection);
     store.dispatch(addWallets(wallets));
   };
 
-  store.subscribe(() => renderForceGraph(store.getState().blockchain, store.getState().settings));
+  const observe = (path, callback) => store.subscribe(watch(store.getState, path)(callback));
+
+  observe('wallets', (wallets) => generateModel(store, connection, wallets));
+  observe('blockchain', (blockchain) => renderForceGraph(blockchain, store.getState().settings));
 
   fetchData(connection);
-  generateModel(connection, wallets);
 });
 
 main();
