@@ -1,8 +1,5 @@
 import * as d3 from 'd3';
-
-import { Counter } from './elements/counter';
-
-window.customElements.define('counter-test', Counter);
+import watch from 'redux-watch';
 
 const generateUTXOLinks = (unspentMap, transactionMap, scriptHashesMap) => Object.values(unspentMap)
   .flatMap((u) => u.utxos.map((utxo) => ({
@@ -64,7 +61,9 @@ const generateModel = (chain) => {
   return { nodes, links };
 };
 
-export default async (blockchain, settings) => {
+export default async (store, blockchain, settings) => {
+  const observe = (path, callback) => store.subscribe(watch(store.getState, path)(callback));
+
   const model = generateModel(blockchain);
   console.log(model);
 
@@ -121,11 +120,14 @@ export default async (blockchain, settings) => {
     }
   };
 
+  const linkForce = d3.forceLink().id((d) => d.id);
+  observe('ui.value', (value) => linkForce(value / 100.0));
+
   const simulation = d3.forceSimulation()
     // .force('center', d3.forceCenter(width / 2, height / 2))
     .force('collide', d3.forceCollide().radius(15))
     .force('charge', d3.forceManyBody())
-    .force('link', d3.forceLink().id((d) => d.id))
+    .force('link', linkForce)
     .force('x', d3.forceX(calcForceX).strength(0.1))
     .force('y', d3.forceY(() => 0).strength(0.02));
 
