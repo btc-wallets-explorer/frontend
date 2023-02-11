@@ -3,8 +3,11 @@ const baseConfig = require('./karma.conf');
 module.exports = (config) => {
   baseConfig(config);
   config.set({
-    files: [
-      process.env.KARMA_SPEC,
-    ],
+    frameworks: ['jasmine', 'webpack'],
+    preprocessors: {
+      'test/**/*.test.js': ['webpack'],
+    },
+    reporters: ['mocha'],
+    files: process.env.KARMA_SPEC.split('\n'),
   });
 };

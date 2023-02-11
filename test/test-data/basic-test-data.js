@@ -17,14 +17,30 @@ const wallets = [
   },
 ];
 
-const addr = (walletName, number, isChange) => getAddress(
+const addr = (walletName, index, isChange) => getAddress(
   wallets.find((w) => w.name === walletName).xpub,
   wallets.find((w) => w.name === walletName).type,
-  number,
+  index,
   isChange,
 );
 
 const sh = toScriptHash;
+
+const shObj = (walletName, index, isChange) => {
+  const address = addr(walletName, index, isChange);
+  const wallet = wallets.find((w) => w.name === walletName);
+
+  return {
+    address,
+    scriptHash: sh(address),
+    isChange,
+    index,
+    wallet: {
+      name: wallet.name,
+      type: wallet.type,
+    },
+  };
+};
 
 const transactions = [
   {
@@ -83,29 +99,29 @@ const transactions = [
 ];
 
 const usedAddresses = [
-  addr('w1', 0, 0),
-  addr('w1', 1, 0),
-  addr('w2', 0, 0),
-  addr('w2', 1, 0),
-  addr('w2', 2, 0),
-  addr('w2', 3, 0),
+  shObj('w1', 0, 0),
+  shObj('w1', 1, 0),
+  shObj('w2', 0, 0),
+  shObj('w2', 1, 0),
+  shObj('w2', 2, 0),
+  shObj('w2', 3, 0),
 ];
 
-const histories = usedAddresses.map((a) => ({
-  scriptHash: sh(a),
+const scriptHashes = usedAddresses.map((obj) => ({
+  scriptHash: sh(obj.address),
   transactions: transactions
     .filter(
-      (tx) => tx.vout.some((vout) => vout.scriptPubKey.address === a)
+      (tx) => tx.vout.some((vout) => vout.scriptPubKey.address === obj.address)
     || tx.vin.some((vin) => {
       const vinTx = transactions.find((t) => t.txid === vin.txid);
-      return vinTx && vinTx.vout[vin.vout].scriptPubKey.address === a;
+      return vinTx && vinTx.vout[vin.vout].scriptPubKey.address === obj.address;
     }),
     )
     .map((tx) => ({ tx_hash: tx.txid })),
+  info: obj,
 }));
 
 const utxos = [
-  ...usedAddresses.map((a) => ({ scriptHash: sh(a), utxos: [] })),
   {
     scriptHash: sh(addr('w2', 3, 0)),
     utxos: [
@@ -114,6 +130,13 @@ const utxos = [
   },
 ];
 
+const toMap = (list, selector) => Object.fromEntries(list.map((o) => [selector(o), o]));
+const blockchain = {
+  transactions: toMap(transactions, (t) => t.txid),
+  scriptHashes: toMap(scriptHashes, (h) => h.scriptHash),
+  utxos: toMap(utxos, (u) => u.scriptHash),
+};
+
 export default {
-  settings, wallets, histories, transactions, utxos,
+  settings, wallets, blockchain,
 };
