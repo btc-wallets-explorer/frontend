@@ -1,17 +1,25 @@
 import watch from 'redux-watch';
 import renderForceGraph from './ui/force-graph';
 
-import { createConnection, getSettings, getWallets } from '../test/mocks/api.mock';
 import { generateModel } from './loadBlockchain';
 import { createNewStore } from './model/store';
 import { setSettings } from './model/settings.reducer.';
 import { addWallets } from './model/wallets.reducer';
 
+import { createConnection, getSettings, getWallets } from './api';
+import { mockBackend } from '../test/test-data/mock-backend';
+
 const main = (async () => {
   const store = createNewStore();
-  const connection = await createConnection();
+
+  const observe = (path, callback) => store.subscribe(watch(store.getState, path)(callback));
+
+  observe('blockchain', (blockchain) => renderForceGraph(blockchain, store.getState().settings));
 
   const fetchData = async () => {
+    const connection = await createConnection();
+
+    observe('wallets', (wallets) => generateModel(store, connection, wallets));
     const settings = await getSettings(connection);
     store.dispatch(setSettings(settings));
 
@@ -19,12 +27,8 @@ const main = (async () => {
     store.dispatch(addWallets(wallets));
   };
 
-  const observe = (path, callback) => store.subscribe(watch(store.getState, path)(callback));
-
-  observe('wallets', (wallets) => generateModel(store, connection, wallets));
-  observe('blockchain', (blockchain) => renderForceGraph(blockchain, store.getState().settings));
-
-  fetchData(connection);
+  mockBackend(store);
+  // fetchData();
 });
 
 main();

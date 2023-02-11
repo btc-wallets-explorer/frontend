@@ -4,20 +4,16 @@ import { Counter } from './elements/counter';
 
 window.customElements.define('counter-test', Counter);
 
-const generateUTXOLinks = (unspent, transactionMap, scriptHashes) => {
-  const scriptHashMap = Object.fromEntries(scriptHashes.map((obj) => [obj.scriptHash, obj]));
-
-  return unspent
-    .flatMap((u) => u.utxos.map((utxo) => ({
-      type: 'utxo',
-      source: `txo:${utxo.tx_hash}`,
-      target: `utxo:${u.scriptHash}`,
-      utxo,
-      vout: transactionMap[utxo.tx_hash].vout[utxo.tx_pos],
-      value: utxo.value,
-      info: scriptHashMap[u.scriptHash],
-    })));
-};
+const generateUTXOLinks = (unspentMap, transactionMap, scriptHashesMap) => Object.values(unspentMap)
+  .flatMap((u) => u.utxos.map((utxo) => ({
+    type: 'utxo',
+    source: `txo:${utxo.tx_hash}`,
+    target: `utxo:${u.scriptHash}`,
+    utxo,
+    vout: transactionMap[utxo.tx_hash].vout[utxo.tx_pos],
+    value: utxo.value,
+    info: scriptHashesMap[u.scriptHash].info,
+  })));
 
 const generateUTXONodes = (links) => links
   .filter((l) => l.type === 'utxo')
@@ -27,8 +23,8 @@ const generateUTXONodes = (links) => links
     type: 'utxo',
   }));
 
-const generateTXOs = (transactionMap, scriptHashes) => {
-  const histories = scriptHashes.flatMap(
+const generateTXOs = (transactionMap, scriptHashesMap) => {
+  const histories = Object.values(scriptHashesMap).flatMap(
     (v) => v.transactions.map((hist) => ({
       txid: hist.tx_hash, ...v,
     })),
@@ -70,6 +66,7 @@ const generateModel = (chain) => {
 
 export default async (blockchain, settings) => {
   const model = generateModel(blockchain);
+  console.log(model);
 
   const margin = {
     top: 10, right: 10, bottom: 10, left: 10,
@@ -186,7 +183,7 @@ export default async (blockchain, settings) => {
     // .append('line')
     .append('path')
     .attr('stroke-width', (d) => (d.type === 'txo' ? d.value * 30 : (d.value * 30) / 100000000))
-    .attr('stroke', (d) => colorLinks(d.info.wallet));
+    .attr('stroke', (d) => colorLinks(d.info.wallet.name));
 
   link
     .append('title')

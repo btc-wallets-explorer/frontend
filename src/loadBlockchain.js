@@ -1,7 +1,7 @@
 import { getAddress, getAddressForMultisig, toScriptHash } from './utils/bitcoin';
 import range from './utils/helpers';
-import { getHistories, getTransactions, getUTXOs } from '../test/mocks/api.mock';
 import { setBlockchain } from './model/blockchain.reducer';
+import { getHistories, getTransactions, getUTXOs } from './api';
 
 export const generateModel = async (store, connection, wallets) => {
   const createAddresses = (wallet) => {
@@ -12,8 +12,10 @@ export const generateModel = async (store, connection, wallets) => {
       address: getAddressFn(xpubInfo, wallet.type, index, isChange),
       isChange,
       index,
-      type: wallet.type,
-      wallet: wallet.name,
+      wallet: {
+        name: wallet.name,
+        type: wallet.type,
+      },
     }))).flat();
   };
 
