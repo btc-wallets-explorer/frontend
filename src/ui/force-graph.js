@@ -128,10 +128,6 @@ export default async (store, blockchain, settings) => {
     y: d3.forceY(() => 0).strength(0.02),
   };
 
-  observe('ui.forceStrength', (data) => {
-    Object.entries(data).forEach(([k, v]) => forces[k].strength(v));
-  });
-
   const simulation = d3.forceSimulation()
     // .force('center', d3.forceCenter(width / 2, height / 2))
     .force('collide', forces.collide)
@@ -139,6 +135,11 @@ export default async (store, blockchain, settings) => {
     .force('link', forces.link)
     .force('x', forces.x)
     .force('y', forces.y);
+
+  observe('ui.forceStrength', (data) => {
+    Object.entries(data).forEach(([k, v]) => forces[k].strength(v));
+    simulation.restart().alpha(1);
+  });
 
   const nodes = svg.append('g').selectAll('.node')
     .data(model.nodes)
