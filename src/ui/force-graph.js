@@ -120,16 +120,25 @@ export default async (store, blockchain, settings) => {
     }
   };
 
-  const linkForce = d3.forceLink().id((d) => d.id);
-  observe('ui.value', (value) => linkForce(value / 100.0));
+  const forces = {
+    link: d3.forceLink().id((d) => d.id),
+    charge: d3.forceCollide().radius(15),
+    collide: d3.forceManyBody(),
+    x: d3.forceX(calcForceX).strength(0.1),
+    y: d3.forceY(() => 0).strength(0.02),
+  };
+
+  observe('ui.forceStrength', (data) => {
+    Object.entries(data).forEach(([k, v]) => forces[k].strength(v));
+  });
 
   const simulation = d3.forceSimulation()
     // .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('collide', d3.forceCollide().radius(15))
-    .force('charge', d3.forceManyBody())
-    .force('link', linkForce)
-    .force('x', d3.forceX(calcForceX).strength(0.1))
-    .force('y', d3.forceY(() => 0).strength(0.02));
+    .force('collide', forces.collide)
+    .force('charge', forces.charge)
+    .force('link', forces.link)
+    .force('x', forces.x)
+    .force('y', forces.y);
 
   const nodes = svg.append('g').selectAll('.node')
     .data(model.nodes)
