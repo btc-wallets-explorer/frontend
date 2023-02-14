@@ -1,7 +1,5 @@
-import * as bip32 from 'bip32';
+import * as btcOutDesc from '@blockchainofthings/btc-output-descriptor';
 import * as bitcoin from 'bitcoinjs-lib';
-
-const network = bitcoin.networks.bitcoin;
 
 export const toScriptHash = (address) => {
   const script = bitcoin.address.toOutputScript(address);
@@ -12,34 +10,29 @@ export const toScriptHash = (address) => {
   return scriptHash;
 };
 
-export const getAddress = (xpub, type, number, change = 0) => {
-  const root = bip32.fromBase58(xpub);
+export const createAddresses = (wallet, isChange, startIdx = 0, count = 100) => {
+  const { descriptor } = wallet.outputDescriptors[0];
+  const newDescriptor = descriptor.replace(
+    /[(,\]](.?pub[^),]*)/g,
+    (xpub) => ((xpub.includes('/*'))
+      ? xpub
+      : `${xpub}/${isChange}/*`),
+  );
+  const expression = btcOutDesc.parse(
+    newDescriptor,
+    'main',
+  );
 
-  const child = root.derive(change).derive(number);
+  expression.keyRange = {
+    startIdx,
+    count,
+  };
 
-  const p2wpkh = bitcoin.payments.p2wpkh({
-    pubkey: child.publicKey,
-    network,
-  });
-
-  if (type === 'p2sh-p2wpkh') {
-    const { address } = bitcoin.payments.p2sh({
-      redeem: p2wpkh,
-      network,
-    });
-
-    return address;
-  }
-
-  return p2wpkh.address;
-};
-
-export const getAddressForMultisig = (xpubs, type, number, change = 0) => {
-  const pubkeys = xpubs.map((x) => bip32.fromBase58(x).derive(change).derive(number).publicKey);
-
-  pubkeys.sort((a, b) => a.compare(b));
-  const { address } = bitcoin.payments.p2wsh({
-    redeem: bitcoin.payments.p2ms({ m: 2, pubkeys }),
-  });
-  return address;
+  return expression.addresses.map((address, index) => ({
+    address,
+    scriptHash: toScriptHash(address),
+    isChange,
+    index,
+    wallet,
+  }));
 };

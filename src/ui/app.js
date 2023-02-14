@@ -1,40 +1,57 @@
 import { html, LitElement } from 'lit';
-
-import watch from 'redux-watch';
+import { generateModel } from '../modules/model-generation';
+import { setSettings } from '../model/settings.reducer.';
+import { createNewStore, observe } from '../model/store';
+import { addWallets } from '../model/wallets.reducer';
 import renderForceGraph from './force-graph';
 
-import { generateModel } from '../loadBlockchain';
-import { createNewStore } from '../model/store';
-import { setSettings } from '../model/settings.reducer.';
-import { addWallets } from '../model/wallets.reducer';
-
-import { createConnection, getSettings, getWallets } from '../api';
-import { mockBackend } from '../../test/test-data/mock-backend';
+import { createConnection } from '../modules/api';
+import { setBlockchain } from '../model/blockchain.reducer';
+import { createApiMock } from '../../test/test-helpers';
+import basicTestData from '../../test/test-data/basic-test-data';
 
 export class App extends LitElement {
+  static properties = {
+    notifications: [],
+    store: {},
+  };
+
+  constructor() {
+    super();
+    this.notifications = [];
+    this.store = createNewStore();
+    observe(this.store, 'ui.notifications', (notifications) => {
+      this.notifications = notifications;
+    });
+  }
+
   render() {
-    const store = createNewStore();
-
-    const observe = (path, callback) => store.subscribe(watch(store.getState, path)(callback));
-
-    observe('blockchain', (blockchain) => renderForceGraph(store, blockchain, store.getState().settings));
+    observe(this.store, 'blockchain', (blockchain) => renderForceGraph(this.store, blockchain, this.store.getState().settings));
 
     const fetchData = async () => {
-      const connection = await createConnection();
+      // const api = await createConnection();
+      const api = await createApiMock(basicTestData);
 
-      observe('wallets', (wallets) => generateModel(store, connection, wallets));
-      const settings = await getSettings(connection);
-      store.dispatch(setSettings(settings));
+      observe(this.store, 'wallets', async (wallets) => {
+        const model = await generateModel(api, wallets);
+        console.log(model);
+        this.store.dispatch(setBlockchain(model));
+      });
 
-      const wallets = await getWallets(connection);
-      store.dispatch(addWallets(wallets));
+      const settings = await api.getSettings();
+      this.store.dispatch(setSettings(settings));
+
+      const wallets = await api.getWallets();
+      this.store.dispatch(addWallets(wallets));
     };
 
-    mockBackend(store);
-    // fetchData();
+    fetchData();
 
     return html`
-    <control-panel .store=${store} .value=${5}></control-panel>
+    <control-panel .value=${5}></control-panel>
+    <notifications-panel .notifications=${this.notifications}></notifications-panel>
     `;
   }
+
+  static get tag() { return 'main-application'; }
 }

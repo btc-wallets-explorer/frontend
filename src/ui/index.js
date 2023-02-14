@@ -1,5 +1,7 @@
-import { ControlPanel } from './elements/control-panel';
 import { App } from './app';
+import { ControlPanel } from './elements/control-panel';
+import { Notifications } from './elements/notifications';
 
-window.customElements.define('control-panel', ControlPanel);
-window.customElements.define('main-application', App);
+window.customElements.define(ControlPanel.tag, ControlPanel);
+window.customElements.define(Notifications.tag, Notifications);
+window.customElements.define(App.tag, App);

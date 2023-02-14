@@ -1,4 +1,5 @@
-import { getAddress, toScriptHash } from '../../src/utils/bitcoin';
+import * as BtcOutDesc from '@blockchainofthings/btc-output-descriptor';
+import { toScriptHash } from '../../src/utils/bitcoin';
 
 const settings = {
   'block-explorer-url': 'https://mempool.some.domain:8080/tx/',
@@ -7,40 +8,35 @@ const settings = {
 const wallets = [
   {
     name: 'w1',
-    type: 'p2sh-p2wpkh',
-    xpub: 'xpub6ECbUJnkUL9S9MBSpgRAt6rkhyag7Yc8YMqW9GS3ALwNRNkLp5j6iWXs5qEZaFGr77LVhuMDG3pvcCRcVCf5c2QDY6HkAMqczueZq3HYokT',
+    outputDescriptors: [
+      {
+        name: 'main',
+        descriptor: 'wpkh(xpub6ECbUJnkUL9S9MBSpgRAt6rkhyag7Yc8YMqW9GS3ALwNRNkLp5j6iWXs5qEZaFGr77LVhuMDG3pvcCRcVCf5c2QDY6HkAMqczueZq3HYokT/0/*)',
+      },
+    ],
   },
   {
     name: 'w2',
-    type: 'p2sh-p2wpkh',
-    xpub: 'xpub6DNfpAxd32MAsg4baYWhjism4628cHsA4tZhehg8VV6GYiWWfkzrYLtd7eQfviCEeAvCqEqeP3ukP8TDXyheJqwRJ92UAPtwQQvyYiNhVkv',
+    outputDescriptors: [
+      {
+        name: 'main',
+        descriptor: 'wpkh(xpub6DNfpAxd32MAsg4baYWhjism4628cHsA4tZhehg8VV6GYiWWfkzrYLtd7eQfviCEeAvCqEqeP3ukP8TDXyheJqwRJ92UAPtwQQvyYiNhVkv/0/*)',
+      },
+    ],
   },
 ];
 
-const addr = (walletName, index, isChange) => getAddress(
-  wallets.find((w) => w.name === walletName).xpub,
-  wallets.find((w) => w.name === walletName).type,
-  index,
-  isChange,
-);
+const addr = (walletName, startIdx, outputDesc = 0) => {
+  const wallet = wallets.find((w) => w.name === walletName);
+  const expression = BtcOutDesc.parse(wallet.outputDescriptors[outputDesc].descriptor, 'main');
+  expression.keyRange = {
+    startIdx,
+    count: 1,
+  };
+  return expression.addresses[0];
+};
 
 const sh = toScriptHash;
-
-const shObj = (walletName, index, isChange) => {
-  const address = addr(walletName, index, isChange);
-  const wallet = wallets.find((w) => w.name === walletName);
-
-  return {
-    address,
-    scriptHash: sh(address),
-    isChange,
-    index,
-    wallet: {
-      name: wallet.name,
-      type: wallet.type,
-    },
-  };
-};
 
 const transactions = [
   {
@@ -51,9 +47,9 @@ const transactions = [
       { txid: 'xx3', vout: 2 },
     ],
     vout: [
-      { value: 0.1, scriptPubKey: { address: addr('w1', 0, 0) } },
-      { value: 0.1, scriptPubKey: { address: addr('w1', 1, 0) } },
-      { value: 0.1, scriptPubKey: { address: addr('w2', 0, 0) } },
+      { value: 0.1, scriptPubKey: { address: addr('w1', 0) } },
+      { value: 0.1, scriptPubKey: { address: addr('w1', 1) } },
+      { value: 0.1, scriptPubKey: { address: addr('w2', 0) } },
     ],
     time: 50,
   },
@@ -65,7 +61,7 @@ const transactions = [
     ],
 
     vout: [
-      { value: 0.1, scriptPubKey: { address: addr('w2', 1, 0) } },
+      { value: 0.1, scriptPubKey: { address: addr('w2', 1) } },
       { value: 0.1, scriptPubKey: { address: 'out1' } },
     ],
     time: 300,
@@ -78,7 +74,7 @@ const transactions = [
     ],
 
     vout: [
-      { value: 0.1, scriptPubKey: { address: addr('w2', 2, 0) } },
+      { value: 0.1, scriptPubKey: { address: addr('w2', 2) } },
     ],
     time: 350,
   },
@@ -90,7 +86,7 @@ const transactions = [
     ],
 
     vout: [
-      { value: 0.1, scriptPubKey: { address: addr('w2', 3, 0) } },
+      { value: 0.1, scriptPubKey: { address: addr('w2', 3) } },
       { value: 0.1, scriptPubKey: { address: 'out2' } },
     ],
     time: 430,
@@ -98,32 +94,41 @@ const transactions = [
 
 ];
 
+const addrObj = (walletName, index) => ({
+  address: addr(walletName, index),
+  scriptHash: sh(addr(walletName, index)),
+  isChange: 1,
+  index,
+  wallet: wallets.find((w) => w.name === walletName),
+});
+
 const usedAddresses = [
-  shObj('w1', 0, 0),
-  shObj('w1', 1, 0),
-  shObj('w2', 0, 0),
-  shObj('w2', 1, 0),
-  shObj('w2', 2, 0),
-  shObj('w2', 3, 0),
+  addrObj('w1', 0),
+  addrObj('w1', 1),
+  addrObj('w2', 0),
+  addrObj('w2', 1),
+  addrObj('w2', 2),
+  addrObj('w2', 3),
 ];
 
-const scriptHashes = usedAddresses.map((obj) => ({
-  scriptHash: sh(obj.address),
-  transactions: transactions
-    .filter(
-      (tx) => tx.vout.some((vout) => vout.scriptPubKey.address === obj.address)
+const scriptHashes = usedAddresses
+  .map((obj) => obj.address)
+  .map((address) => ({
+    scriptHash: sh(address),
+    transactions: transactions
+      .filter(
+        (tx) => tx.vout.some((vout) => vout.scriptPubKey.address === address)
     || tx.vin.some((vin) => {
       const vinTx = transactions.find((t) => t.txid === vin.txid);
-      return vinTx && vinTx.vout[vin.vout].scriptPubKey.address === obj.address;
+      return vinTx && vinTx.vout[vin.vout].scriptPubKey.address === address;
     }),
-    )
-    .map((tx) => ({ tx_hash: tx.txid })),
-  info: obj,
-}));
+      )
+      .map((tx) => ({ tx_hash: tx.txid })),
+  }));
 
 const utxos = [
   {
-    scriptHash: sh(addr('w2', 3, 0)),
+    scriptHash: sh(addr('w2', 3)),
     utxos: [
       { tx_hash: 'tx4', value: 10000000, tx_pos: 0 },
     ],
@@ -138,5 +143,5 @@ const blockchain = {
 };
 
 export default {
-  settings, wallets, blockchain,
+  settings, wallets, blockchain, usedAddresses,
 };

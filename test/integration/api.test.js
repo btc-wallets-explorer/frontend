@@ -1,16 +1,13 @@
-import { createConnection, getTransactions } from '../../src/api';
+import { createConnection } from '../../src/modules/api';
 
 describe('when connection exists', () => {
-  const setup = async () => {
-    const connection = await createConnection();
-    return connection;
-  };
+  const setup = async () => createConnection();
 
   describe('transactions', () => {
     it('fetches transactions by txId', async () => {
-      const connection = await setup();
+      const api = await setup();
 
-      const actual = await getTransactions(connection, [
+      const actual = await api.getTransactions([
         'efffda472426afbba15099c43d25caa8e58693367319bbe1fbd8e86cefcc6718',
         '93955d40d918d014903843d258aada5c720a5d37afac7889268f459a97b148a3',
       ]);
