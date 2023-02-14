@@ -1,5 +1,6 @@
-import { html, LitElement, css } from 'lit';
-import { setValue } from '../../model/ui.reducer';
+import { html, LitElement } from 'lit';
+import { setForceStrength } from '../../model/ui.reducer';
+import css from './control-panel.css';
 
 export class ControlPanel extends LitElement {
   static properties = {
@@ -7,19 +8,22 @@ export class ControlPanel extends LitElement {
     store: {},
   };
 
-  static styles = css`
-    :host {
-      display: block;
-      padding: 25px;
-      color: var(--todo-list-text-color, #000);
-    }
-  `;
-
   render() {
-    const onChange = (event) => this.store.dispatch(setValue(event.target.value));
+    const onChange = (event) => this.store.dispatch(
+      setForceStrength({ target: event.target.id, value: event.target.value / 100 }),
+    );
+
+    const forceControl = ['link', 'charge', 'collide', 'x', 'y'].map((force) => html`
+        <div class="item">
+          <label for=${force}>${force} force</label>
+          <input @input=${onChange} type="range" min="1" max="100" value=${this.value} class="slider" id=${force}>
+        </div>
+      `);
+
     return html`
-      <div class="slidecontainer">
-        <input @input=${onChange} type="range" min="1" max="100" value=${this.value} class="slider" id="myRange">
+      <styles>${css}</styles>
+      <div class="container">
+        ${forceControl}
       </div>
     `;
   }
