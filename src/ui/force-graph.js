@@ -48,7 +48,7 @@ const generateTXONodes = (transactionMap) => Object.values(transactionMap).map((
   tx,
 }));
 
-const generateModel = (chain) => {
+const createNetwork = (chain) => {
   const utxoLinks = generateUTXOLinks(chain.utxos, chain.transactions, chain.scriptHashes);
   const txoLinks = generateTXOs(chain.transactions, chain.scriptHashes);
   const utxoNodes = generateUTXONodes(utxoLinks);
@@ -64,8 +64,8 @@ const generateModel = (chain) => {
 export default async (store, blockchain, settings) => {
   const observe = (path, callback) => store.subscribe(watch(store.getState, path)(callback));
 
-  const model = generateModel(blockchain);
-  console.log(model);
+  const network = createNetwork(blockchain);
+  console.log(network);
 
   const margin = {
     top: 10, right: 10, bottom: 10, left: 10,
@@ -94,7 +94,7 @@ export default async (store, blockchain, settings) => {
   const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
 
   // load the data
-  const times = model.nodes
+  const times = network.nodes
     .filter((n) => n.type === 'txo')
     .filter((n) => 'time' in n.tx)
     .map((n) => n.tx.time);
@@ -114,7 +114,7 @@ export default async (store, blockchain, settings) => {
       case 'utxo':
         return width;
       default:
-        console.log(node);
+        console.error('node type not recognized for', node);
 
         return 0;
     }
@@ -142,7 +142,7 @@ export default async (store, blockchain, settings) => {
   });
 
   const nodes = svg.append('g').selectAll('.node')
-    .data(model.nodes)
+    .data(network.nodes)
     .enter()
     .append('g');
 
@@ -190,7 +190,7 @@ export default async (store, blockchain, settings) => {
     .y((d) => d.y);
 
   const link = svg.append('g').selectAll('.link')
-    .data(model.links)
+    .data(network.links)
     .enter()
     // .append('line')
     .append('path')
@@ -201,8 +201,8 @@ export default async (store, blockchain, settings) => {
     .append('title')
     .text((d) => `${d.info.wallet}  ${JSON.stringify(d.info, null, 1)}  ${d.value}`);
 
-  simulation.nodes(model.nodes);
-  simulation.force('link').links(model.links);
+  simulation.nodes(network.nodes);
+  simulation.force('link').links(network.links);
 
   simulation.on('tick', () => {
     link.attr('d', linkGen);

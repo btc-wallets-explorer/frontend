@@ -1,6 +1,7 @@
+import { sendNotification } from '../model/ui.reducer';
 import { createAddresses, toScriptHash } from '../utils/bitcoin';
 
-export const generateModel = async (api, wallets) => {
+export const generateModel = async (store, api, wallets) => {
   const toHistories = async (addressObjs) => {
     const hashes = addressObjs.map((o) => toScriptHash(o.address));
     const histories = await api.getHistories(hashes);
@@ -19,15 +20,21 @@ export const generateModel = async (api, wallets) => {
   };
 
   const fetchAllScriptHashes = async (wallet) => {
-    const limit = 100;
-    const start = 0;
+    const fetch = async (start, limit) => {
+      store.dispatch(sendNotification({ title: 'fetching addresses', content: `${wallet.name} - ${start}-${start + limit}` }));
 
-    const addresses = [
-      ...createAddresses(wallet, 0, start, limit),
-      ...createAddresses(wallet, 1, start, limit),
-    ];
-    const scriptHashes = await toHistories(addresses);
-    // store.dispatch(sendNotification({ title: 'addresses', content: wallet }));
+      const addresses = [
+        ...createAddresses(wallet, 0, start, limit),
+        ...createAddresses(wallet, 1, start, limit),
+      ];
+      const histories = await toHistories(addresses.slice(start, start + limit));
+      return histories.length < limit
+        ? histories
+        : [...histories, ...await fetch(start + limit, limit)];
+    };
+
+    const scriptHashes = await fetch(0, 100);
+
     return scriptHashes;
   };
 

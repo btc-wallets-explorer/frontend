@@ -18,6 +18,7 @@ export const createAddresses = (wallet, isChange, startIdx = 0, count = 100) => 
       ? xpub
       : `${xpub}/${isChange}/*`),
   );
+
   const expression = btcOutDesc.parse(
     newDescriptor,
     'main',

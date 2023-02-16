@@ -20,20 +20,15 @@ export class App extends LitElement {
     super();
     this.notifications = [];
     this.store = createNewStore();
-    observe(this.store, 'ui.notifications', (notifications) => {
-      this.notifications = notifications;
-    });
-  }
 
-  render() {
     observe(this.store, 'blockchain', (blockchain) => renderForceGraph(this.store, blockchain, this.store.getState().settings));
 
     const fetchData = async () => {
-      // const api = await createConnection();
-      const api = await createApiMock(basicTestData);
+      const api = await createConnection();
+      // const api = await createApiMock(basicTestData);
 
       observe(this.store, 'wallets', async (wallets) => {
-        const model = await generateModel(api, wallets);
+        const model = await generateModel(this.store, api, wallets);
         console.log(model);
         this.store.dispatch(setBlockchain(model));
       });
@@ -46,10 +41,12 @@ export class App extends LitElement {
     };
 
     fetchData();
+  }
 
+  render() {
     return html`
-    <control-panel .value=${5}></control-panel>
-    <notifications-panel .notifications=${this.notifications}></notifications-panel>
+    <control-panel .store=${this.store} .value=${5}></control-panel>
+    <notifications-panel .store=${this.store} .notifications=${this.notifications}></notifications-panel>
     `;
   }
 

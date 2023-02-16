@@ -1,4 +1,5 @@
 import { html } from 'lit';
+import { observe } from '../../model/store';
 import { setForceStrength } from '../../model/ui.reducer';
 import { Base } from './base';
 import css from './control-panel.css';
