@@ -1,5 +1,7 @@
 import { createNewStore } from '../../../src/model/store';
-import { sendNotification } from '../../../src/model/ui.reducer';
+import {
+  addSelection, clearSelections, removeSelection, sendNotification,
+} from '../../../src/model/ui.reducer';
 
 describe('ui reducer', () => {
   let store;
@@ -10,10 +12,11 @@ describe('ui reducer', () => {
   it('has empty initial values', () => {
     expect(store.getState().ui).toEqual({
       notifications: [],
+      selections: [],
       forceStrength: {
         charge: 0.1,
         link: 0.1,
-        collide: 0.1,
+        collide: 1,
         x: 0.1,
         y: 0.1,
       },
@@ -27,5 +30,40 @@ describe('ui reducer', () => {
 
     const actual = store.getState().ui;
     expect(actual.notifications).toEqual([expected, expected]);
+  });
+
+  it('adds selections', () => {
+    const selection1 = { type: 'txo', id: 'test1' };
+    const selection2 = { type: 'txo', id: 'test2' };
+
+    store.dispatch(addSelection(selection1));
+    store.dispatch(addSelection(selection2));
+
+    const actual = store.getState().ui;
+    expect(actual.selections).toEqual([selection1, selection2]);
+  });
+
+  it('removes a selection', () => {
+    const selection1 = { type: 'txo', id: 'test1' };
+    const selection2 = { type: 'txo', id: 'test2' };
+    store.dispatch(addSelection(selection1));
+    store.dispatch(addSelection(selection2));
+
+    store.dispatch(removeSelection(selection1));
+
+    const actual = store.getState().ui;
+    expect(actual.selections).toEqual([selection2]);
+  });
+
+  it('clears selections', () => {
+    const selection1 = { type: 'txo', id: 'test1' };
+    const selection2 = { type: 'txo', id: 'test2' };
+    store.dispatch(addSelection(selection1));
+    store.dispatch(addSelection(selection2));
+
+    store.dispatch(clearSelections());
+
+    const actual = store.getState().ui;
+    expect(actual.selections).toEqual([]);
   });
 });

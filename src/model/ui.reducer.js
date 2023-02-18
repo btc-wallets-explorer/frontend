@@ -1,12 +1,19 @@
 /* eslint-disable no-param-reassign */
 import { createReducer, createAction } from '@reduxjs/toolkit';
+import _ from 'lodash';
 
 export const setForceStrength = createAction('ui/force/set');
+
 export const sendNotification = createAction('ui/notification/send');
+
+export const addSelection = createAction('ui/selection/add');
+export const removeSelection = createAction('ui/selection/remove');
+export const clearSelections = createAction('ui/selection/clear');
 
 export const uiReducer = createReducer(
   {
     notifications: [],
+    selections: [],
     forceStrength: {
       charge: 0.1,
       link: 0.1,
@@ -23,5 +30,17 @@ export const uiReducer = createReducer(
     .addCase(sendNotification, (state, action) => ({
       ...state,
       notifications: [...state.notifications, action.payload],
+    }))
+    .addCase(addSelection, (state, action) => ({
+      ...state,
+      selections: [...state.selections, action.payload],
+    }))
+    .addCase(removeSelection, (state, action) => ({
+      ...state,
+      selections: state.selections.filter((s) => !_.isEqual(s, action.payload)),
+    }))
+    .addCase(clearSelections, (state) => ({
+      ...state,
+      selections: [],
     })),
 );

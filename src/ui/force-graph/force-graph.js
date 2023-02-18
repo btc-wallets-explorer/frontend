@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import watch from 'redux-watch';
+import { addSelection, clearSelections, removeSelection } from '../../model/ui.reducer';
 import { createNetwork } from './network-generation';
 
 const nodeWidth = 10;
@@ -87,6 +88,23 @@ export const d3ForceGraph = (store, blockchain, settings) => {
     .enter()
     .append('g');
 
+  const handleNodeClick = (event, node) => {
+    if (event.ctrlKey) {
+      window.open(settings['block-explorer-url'] + node.id.slice(4), '_blank');
+    } else {
+      const txIds = store.getState().ui.selections
+        .filter((s) => s.type === 'transaction')
+        .map((s) => s.id);
+
+      const selection = { type: 'transaction', id: node.tx.txid };
+      if (txIds.includes(node.tx.txid)) {
+        store.dispatch(removeSelection(selection));
+      } else {
+        store.dispatch(addSelection(selection));
+      }
+    }
+  };
+
   const drawBlock = (items) => {
     items.attr('class', 'node_block');
 
@@ -102,11 +120,7 @@ export const d3ForceGraph = (store, blockchain, settings) => {
       .attr('height', nodeHeight)
       .attr('width', nodeWidth)
       .style('fill', (d) => colorNodes(d.type))
-      .on('click', (event, node) => {
-        if (event.ctrlKey) {
-          window.open(settings['block-explorer-url'] + node.id.slice(4), '_blank');
-        }
-      })
+      .on('click', handleNodeClick)
       .style('stroke', (d) => d3.rgb(d.color).brighter(2))
       .append('title')
       .text((d) => `${d.name}`);
@@ -195,5 +209,16 @@ export const d3ForceGraph = (store, blockchain, settings) => {
     d3.selectAll('.node_block')
       .attr('transform', (d) => `translate(${d.x},${d.y})`);
   });
+
+  observe('ui.selections', (data) => {
+    const txIds = data
+      .filter((s) => s.type === 'transaction')
+      .map((s) => s.id);
+
+    d3
+      .selectAll('.node_rect')
+      .attr('class', (n) => `node_rect ${txIds.includes(n.tx.txid) ? 'selected' : ''}`);
+  });
+
   simulation.alpha(0.5).restart();
 };
