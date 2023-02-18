@@ -1,10 +1,11 @@
 import { html } from 'lit';
-import { observe } from '../../model/store';
 import { setForceStrength } from '../../model/ui.reducer';
 import { Base } from './base';
 import css from './control-panel.css';
 
 export class ControlPanel extends Base {
+  static css = css;
+
   render() {
     const onChange = (event) => this.store.dispatch(
       setForceStrength({ target: event.target.id, value: event.target.value / 100 }),
@@ -18,7 +19,6 @@ export class ControlPanel extends Base {
       `);
 
     return html`
-      <styles>${css}</styles>
       <div class="container">
         ${forceControl}
       </div>
