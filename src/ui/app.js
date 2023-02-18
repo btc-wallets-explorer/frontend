@@ -57,8 +57,9 @@ export class App extends Base {
     return html`
     <styles>${appCss}</styles>
     <div class='container'>
-      <control-panel .store=${this.store} .value=${5}></control-panel>
+      <control-panel .store=${this.store}></control-panel>
       <notifications-panel .store=${this.store}></notifications-panel>
+      <selection-info .store=${this.store}></selection-info>
     </div>
     `;
   }

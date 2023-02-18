@@ -2,25 +2,25 @@ import { html } from 'lit';
 import { observe } from '../../model/store';
 import { Base } from './base';
 
-export class Notifications extends Base {
+export class SelectionInfo extends Base {
   static properties = {
-    notifications: {},
+    selections: {},
   };
 
   constructor() {
     super();
-    this.notifications = [];
+    this.selections = [];
   }
 
   connectedCallback() {
     super.connectedCallback();
-    observe(this.store, 'ui.notifications', (notifications) => {
-      this.notifications = notifications;
+    observe(this.store, 'ui.selection', (selections) => {
+      this.selections = selections;
     });
   }
 
   render() {
-    const content = this.notifications.map((n) => html`${n.title}: ${n.content}<br/>`);
+    const content = this.selections.map((s) => html`${s.type}: ${s.id}<br/>`);
     return html`
       <div class="notifications">
         ${content}
@@ -28,5 +28,5 @@ export class Notifications extends Base {
     `;
   }
 
-  static get tag() { return 'notifications-panel'; }
+  static get tag() { return 'selection-info'; }
 }
