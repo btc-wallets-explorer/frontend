@@ -10,7 +10,7 @@ export const uiReducer = createReducer(
     forceStrength: {
       charge: 0.1,
       link: 0.1,
-      collide: 0.1,
+      collide: 1.0,
       x: 0.1,
       y: 0.1,
     },

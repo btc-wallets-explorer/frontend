@@ -5,8 +5,13 @@ import css from './control-panel.css';
 
 export class Notifications extends Base {
   static properties = {
-    notifications: [],
+    notifications: {},
   };
+
+  constructor() {
+    super();
+    this.notifications = [];
+  }
 
   connectedCallback() {
     super.connectedCallback();
@@ -16,7 +21,7 @@ export class Notifications extends Base {
   }
 
   render() {
-    const content = this.notifications.map((n) => html`${n.title}: ${n.content}<br></br>`);
+    const content = this.notifications.map((n) => html`${n.title}: ${n.content}<br/>`);
     return html`
       <styles>${css}</styles>
       <div class="notifications">

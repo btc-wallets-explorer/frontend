@@ -1,10 +1,16 @@
 import { html } from 'lit';
-import { observe } from '../../model/store';
 import { setForceStrength } from '../../model/ui.reducer';
 import { Base } from './base';
 import css from './control-panel.css';
 
 export class ControlPanel extends Base {
+  static css = css;
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.forceStrength = this.store.getState().ui.forceStrength;
+  }
+
   render() {
     const onChange = (event) => this.store.dispatch(
       setForceStrength({ target: event.target.id, value: event.target.value / 100 }),
@@ -13,12 +19,11 @@ export class ControlPanel extends Base {
     const forceControl = ['link', 'charge', 'collide', 'x', 'y'].map((force) => html`
         <div class="item">
           <label for=${force}>${force} force</label>
-          <input @input=${onChange} type="range" min="1" max="100" value="50" class="slider" id=${force}>
+          <input @input=${onChange} type="range" min="1" max="100" value=${this.forceStrength[force]} class="slider" id=${force}>
         </div>
       `);
 
     return html`
-      <styles>${css}</styles>
       <div class="container">
         ${forceControl}
       </div>

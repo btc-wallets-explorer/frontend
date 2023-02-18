@@ -26,7 +26,7 @@ export const createAddresses = (wallet, isChange, startIdx = 0, count = 100) => 
 
   expression.keyRange = {
     startIdx,
-    count,
+    count: startIdx + count,
   };
 
   return expression.addresses.map((address, index) => ({
