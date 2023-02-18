@@ -13,8 +13,6 @@ import { Base } from './components/base';
 import { d3ForceGraph } from './force-graph/force-graph';
 
 export class App extends Base {
-  static css = appCss;
-
   static properties = {
     notifications: [],
     store: {},
@@ -24,7 +22,6 @@ export class App extends Base {
 
   constructor() {
     super();
-    this.notifications = [];
     this.store = createNewStore();
     this.model = {};
     this.settings = {};
@@ -56,8 +53,11 @@ export class App extends Base {
 
   render() {
     return html`
-    <control-panel .store=${this.store} .value=${5}></control-panel>
-    <notifications-panel .store=${this.store} .notifications=${this.notifications}></notifications-panel>
+    <styles>${appCss}</styles>
+    <div class='container'>
+      <control-panel .store=${this.store} .value=${5}></control-panel>
+      <notifications-panel .store=${this.store}></notifications-panel>
+    </div>
     `;
   }
 

@@ -20,7 +20,7 @@ export const d3ForceGraph = (store, blockchain, settings) => {
   // append the svg canvas to the page
   const svg = d3.select('#graph').append('svg')
     .attr('width', '100%')
-    .attr('height', '90%')
+    .attr('height', '100%')
     .append('g')
     .attr(
       'transform',

@@ -28,7 +28,7 @@ export const generateModel = async (store, api, wallets) => {
         ...createAddresses(wallet, 1, start, limit),
       ];
       const histories = await toHistories(addresses.slice(start, start + limit));
-      return histories.length < limit
+      return histories.slice(limit - 10).length === 0
         ? histories
         : [...histories, ...await fetch(start + limit, limit)];
     };
