@@ -36,9 +36,11 @@ export class App extends Base {
 
       observe(this.store, 'wallets', async (wallets) => {
         this.model = await generateModel(this.store, api, wallets);
-        console.log(this.model);
-        d3ForceGraph(this.store, this.model, this.settings);
         this.store.dispatch(setBlockchain(this.model));
+
+        console.log(this.model);
+
+        d3ForceGraph(this.store, this.model, this.settings);
       });
 
       this.settings = await api.getSettings();

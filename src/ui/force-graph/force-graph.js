@@ -2,6 +2,9 @@ import * as d3 from 'd3';
 import watch from 'redux-watch';
 import { createNetwork } from './network-generation';
 
+const nodeWidth = 10;
+const nodeHeight = 20;
+
 export const d3ForceGraph = (store, blockchain, settings) => {
   const observe = (path, callback) => store.subscribe(watch(store.getState, path)(callback));
 
@@ -11,9 +14,6 @@ export const d3ForceGraph = (store, blockchain, settings) => {
   const margin = {
     top: 10, right: 10, bottom: 10, left: 10,
   };
-
-  const nodeWidth = 10;
-  const nodeHeight = 20;
 
   const width = 1200 - margin.left - margin.right;
 
@@ -87,34 +87,93 @@ export const d3ForceGraph = (store, blockchain, settings) => {
     .enter()
     .append('g');
 
-  nodes.append('rect')
-    .call(d3.drag().on('drag', (event, d) => {
+  const drawBlock = (items) => {
+    items.attr('class', 'node_block');
+
+    items.append('rect')
+      .call(d3.drag().on('drag', (event, d) => {
       // eslint-disable-next-line no-param-reassign
-      d.x = event.x;
-      // eslint-disable-next-line no-param-reassign
-      d.y = event.y;
-      simulation.restart().alpha(1);
-    }))
-    .attr('class', 'node_rect')
-    .attr('height', nodeHeight)
-    .attr('width', nodeWidth)
-    .style('fill', (d) => colorNodes(d.type))
-    .on('click', (event, node) => {
-      if (event.ctrlKey) {
-        window.open(settings['block-explorer-url'] + node.id.slice(4), '_blank');
-      }
-    })
-    .style('stroke', (d) => d3.rgb(d.color).brighter(2))
+        d.x = event.x;
+        // eslint-disable-next-line no-param-reassign
+        d.y = event.y;
+        simulation.restart().alpha(1);
+      }))
+      .attr('class', 'node_rect')
+      .attr('height', nodeHeight)
+      .attr('width', nodeWidth)
+      .style('fill', (d) => colorNodes(d.type))
+      .on('click', (event, node) => {
+        if (event.ctrlKey) {
+          window.open(settings['block-explorer-url'] + node.id.slice(4), '_blank');
+        }
+      })
+      .style('stroke', (d) => d3.rgb(d.color).brighter(2))
+      .append('title')
+      .text((d) => `${d.name}`);
+  };
+
+  const drawTransactionDetails = (items) => {
+    items
+      .append((node) => {
+        const ns = 'http://www.w3.org/2000/svg';
+        const group = document.createElementNS(ns, 'g');
+        group.setAttribute('classes', 'vin');
+
+        const calcVinY = (tx, vin) => (nodeHeight / tx.vin.length)
+        * (tx.vin.indexOf(vin) + 0.5);
+        const vinLines = node.tx.vin.map((vin) => {
+          const line = document.createElementNS(ns, 'line');
+          line.setAttribute('class', 'vin');
+          line.setAttribute('x1', 0);
+          line.setAttribute('y1', calcVinY(node.tx, vin));
+          line.setAttribute('x2', -5);
+          line.setAttribute('y2', calcVinY(node.tx, vin));
+          return line;
+        });
+
+        const calcVoutY = (tx, vout) => (nodeHeight / tx.vout.length)
+        * (tx.vout.indexOf(vout) + 0.5);
+        const voutLines = node.tx.vout.map((vout) => {
+          const line = document.createElementNS(ns, 'line');
+          line.setAttribute('class', 'vout');
+          line.setAttribute('x1', nodeWidth);
+          line.setAttribute('y1', calcVoutY(node.tx, vout));
+          line.setAttribute('x2', nodeWidth + 5);
+          line.setAttribute('y2', calcVoutY(node.tx, vout));
+          return line;
+        });
+
+        vinLines.forEach((l) => group.appendChild(l));
+        voutLines.forEach((l) => group.appendChild(l));
+
+        return group;
+      });
+  };
+
+  drawBlock(nodes);
+  drawTransactionDetails(nodes);
+
+  const link = svg.append('g').selectAll('.link')
+    .data(network.links)
+    .enter()
+    .append('path')
+    .attr('stroke-width', (d) => (d.type === 'txo' ? d.value * 30 : (d.value * 30) / 100000000))
+    .attr('stroke', (d) => colorLinks(d.info.wallet.name));
+
+  link
     .append('title')
-    .text((d) => `${d.name}`);
+    .text((d) => `${d.info.wallet}  ${JSON.stringify(d.info, null, 1)}  ${d.value}`);
+
+  simulation.nodes(network.nodes);
+  simulation.force('link').links(network.links);
 
   const calcVoutYOffset = (d) => (d.source.type === 'txo'
-    ? (nodeWidth / d.source.tx.vout.length) * (d.source.tx.vout.indexOf(d.vout) + 0.5)
-    : nodeWidth / 2);
+    ? (nodeHeight / d.source.tx.vout.length) * (d.source.tx.vout.indexOf(d.vout) + 0.5)
+    : nodeHeight / 2);
 
   const calcVinYOffset = (d) => (d.target.type === 'txo'
-    ? (nodeWidth / d.target.tx.vin.length) * (d.target.tx.vin.indexOf(d.vin) + 0.5)
-    : nodeWidth / 2);
+    ? (nodeHeight / d.target.tx.vin.length) * (d.target.tx.vin.indexOf(d.vin) + 0.5)
+    : nodeHeight / 2);
 
   const linkGen = d3.linkHorizontal()
     .source((d) => ({
@@ -130,27 +189,11 @@ export const d3ForceGraph = (store, blockchain, settings) => {
     .x((d) => d.x)
     .y((d) => d.y);
 
-  const link = svg.append('g').selectAll('.link')
-    .data(network.links)
-    .enter()
-    // .append('line')
-    .append('path')
-    .attr('stroke-width', (d) => (d.type === 'txo' ? d.value * 30 : (d.value * 30) / 100000000))
-    .attr('stroke', (d) => colorLinks(d.info.wallet.name));
-
-  link
-    .append('title')
-    .text((d) => `${d.info.wallet}  ${JSON.stringify(d.info, null, 1)}  ${d.value}`);
-
-  simulation.nodes(network.nodes);
-  simulation.force('link').links(network.links);
-
   simulation.on('tick', () => {
     link.attr('d', linkGen);
 
-    d3.selectAll('.node_rect')
-      .attr('x', (d) => d.x)
-      .attr('y', (d) => d.y);
+    d3.selectAll('.node_block')
+      .attr('transform', (d) => `translate(${d.x},${d.y})`);
   });
-  simulation.alpha(0.3).restart();
+  simulation.alpha(0.5).restart();
 };

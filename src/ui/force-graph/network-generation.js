@@ -1,6 +1,3 @@
-import * as d3 from 'd3';
-import watch from 'redux-watch';
-
 const generateUTXOLinks = (unspentMap, transactionMap, scriptHashesMap) => Object.values(unspentMap)
   .flatMap((u) => u.utxos.map((utxo) => ({
     type: 'utxo',

@@ -20,20 +20,21 @@ export const generateModel = async (store, api, wallets) => {
   };
 
   const fetchAllScriptHashes = async (wallet) => {
-    const fetch = async (start, limit) => {
+    const fetch = async (isChange, start, limit) => {
       store.dispatch(sendNotification({ title: 'fetching addresses', content: `${wallet.name} - ${start}-${start + limit}` }));
 
-      const addresses = [
-        ...createAddresses(wallet, 0, start, limit),
-        ...createAddresses(wallet, 1, start, limit),
-      ];
+      const addresses = createAddresses(wallet, isChange, start, limit);
       const histories = await toHistories(addresses.slice(start, start + limit));
-      return histories.slice(limit - 10).length === 0
+      return histories.length < limit / 2
         ? histories
-        : [...histories, ...await fetch(start + limit, limit)];
+        : [...histories, ...await fetch(isChange, start + limit, limit)];
     };
 
-    const scriptHashes = await fetch(0, 100);
+    const batchSize = 100;
+    const scriptHashes = [
+      ...await fetch(0, 0, batchSize),
+      ...await fetch(1, 0, batchSize),
+    ];
 
     return scriptHashes;
   };
