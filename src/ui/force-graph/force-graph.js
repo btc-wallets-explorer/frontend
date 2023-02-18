@@ -12,7 +12,7 @@ export const d3ForceGraph = (store, blockchain, settings) => {
     top: 10, right: 10, bottom: 10, left: 10,
   };
 
-  const nodeWidth = 20;
+  const nodeWidth = 10;
   const nodeHeight = 20;
 
   const width = 1200 - margin.left - margin.right;
@@ -65,8 +65,8 @@ export const d3ForceGraph = (store, blockchain, settings) => {
     link: d3.forceLink().id((d) => d.id),
     charge: d3.forceCollide().radius(15),
     collide: d3.forceManyBody(),
-    x: d3.forceX(calcForceX).strength(0.1),
-    y: d3.forceY(() => 0).strength(0.02),
+    x: d3.forceX(calcForceX),
+    y: d3.forceY(() => 0),
   };
 
   const simulation = d3.forceSimulation()
@@ -77,10 +77,10 @@ export const d3ForceGraph = (store, blockchain, settings) => {
     .force('x', forces.x)
     .force('y', forces.y);
 
-  observe('ui.forceStrength', (data) => {
-    Object.entries(data).forEach(([k, v]) => forces[k].strength(v));
+  ['collide', 'charge', 'link', 'x', 'y'].forEach((force) => observe(`ui.forceStrength.${force}`, (data) => {
+    forces[force].strength(data);
     simulation.restart().alpha(1);
-  });
+  }));
 
   const nodes = svg.append('g').selectAll('.node')
     .data(network.nodes)
