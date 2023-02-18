@@ -97,7 +97,7 @@ const transactions = [
 const addrObj = (walletName, index) => ({
   address: addr(walletName, index),
   scriptHash: sh(addr(walletName, index)),
-  isChange: 0,
+  isChange: 1,
   index,
   wallet: wallets.find((w) => w.name === walletName),
 });
