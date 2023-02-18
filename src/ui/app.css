@@ -1,4 +1,19 @@
 .container {
+
+    height: 100%;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+}
+
+.control {
+    width: 20%;
+}
+
+.notifications {
+    width: 30%;
+}
+
+.info {
+    width: 50%;
+
 }

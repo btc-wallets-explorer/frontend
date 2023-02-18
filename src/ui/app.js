@@ -53,13 +53,13 @@ export class App extends Base {
     fetchData();
   }
 
-  render() {
+  show() {
     return html`
-    <styles>${appCss}</styles>
+    <style>${appCss}</style>
     <div class='container'>
-      <control-panel .store=${this.store}></control-panel>
-      <notifications-panel .store=${this.store}></notifications-panel>
-      <selection-info .store=${this.store}></selection-info>
+      <control-panel class='control' .store=${this.store}></control-panel>
+      <notifications-panel class='notifications' .store=${this.store}></notifications-panel>
+      <selection-info class='info' .store=${this.store}></selection-info>
     </div>
     `;
   }

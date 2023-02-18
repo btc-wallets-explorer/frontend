@@ -3,6 +3,9 @@
 <title>Overview</title>
 <style>
   .page {
+    color: white;
+    background-color: black;
+
     width: 100%;
     height: 100%;
   }
@@ -10,9 +13,12 @@
     height: 80%;
     width: 100%;
   }
-  main-application {
+  .main {
     height: 20%;
     width: 100%;
+  }
+  .selected {
+    outline: 3px solid yellow;
   }
   .vin {
     stroke: white;
@@ -27,7 +33,9 @@
 <body>
   <div class="page">
     <div id="graph" class="graph"></div>
-    <main-application></main-application>
+    <div class="main">
+      <main-application></main-application>
+    </div>
   </div>
 </body>
 

@@ -1,6 +1,7 @@
 import { html } from 'lit';
 import { observe } from '../../model/store';
 import { Base } from './base';
+import css from './notifications.css';
 
 export class Notifications extends Base {
   static properties = {
@@ -19,10 +20,11 @@ export class Notifications extends Base {
     });
   }
 
-  render() {
+  show() {
     const content = this.notifications.map((n) => html`${n.title}: ${n.content}<br/>`);
     return html`
-      <div class="notifications">
+      <style>${css}</style>
+      <div class="container">
         ${content}
       </div>
     `;

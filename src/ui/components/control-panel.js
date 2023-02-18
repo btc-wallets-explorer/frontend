@@ -11,7 +11,7 @@ export class ControlPanel extends Base {
     this.forceStrength = this.store.getState().ui.forceStrength;
   }
 
-  render() {
+  show() {
     const onChange = (event) => this.store.dispatch(
       setForceStrength({ target: event.target.id, value: event.target.value / 100 }),
     );
