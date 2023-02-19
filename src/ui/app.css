@@ -1,6 +1,19 @@
-.container {
+.page {
+    color: white;
+    background-color: black;
 
+    width: 100%;
     height: 100%;
+}
+
+.detailed-view {
+    height: 80%;
+    width: 100%;
+}
+
+.widgets {
+    height: 20%;
+    width: 100%;
     display: flex;
     flex-wrap: nowrap;
 }

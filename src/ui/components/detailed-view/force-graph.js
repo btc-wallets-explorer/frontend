@@ -1,12 +1,14 @@
 import * as d3 from 'd3';
 import watch from 'redux-watch';
-import { addSelection, clearSelections, removeSelection } from '../../model/ui.reducer';
+import { addSelection, removeSelection } from '../../../model/ui.reducer';
 import { createNetwork } from './network-generation';
 
 const nodeWidth = 10;
 const nodeHeight = 20;
 
-export const d3ForceGraph = (store, blockchain, settings) => {
+export const d3ForceGraph = (root, store, blockchain, settings) => {
+  const query = (q) => root.shadowRoot.querySelector(q);
+  const queryAll = (q) => root.shadowRoot.querySelectorAll(q);
   const observe = (path, callback) => store.subscribe(watch(store.getState, path)(callback));
 
   const network = createNetwork(blockchain);
@@ -19,7 +21,7 @@ export const d3ForceGraph = (store, blockchain, settings) => {
   const width = 1200 - margin.left - margin.right;
 
   // append the svg canvas to the page
-  const svg = d3.select('#graph').append('svg')
+  const svg = d3.select(query('.graph')).append('svg')
     .attr('width', '100%')
     .attr('height', '100%')
     .append('g')
@@ -30,7 +32,7 @@ export const d3ForceGraph = (store, blockchain, settings) => {
 
   const handleZoom = (e) => svg.attr('transform', e.transform);
   const zoomBehavior = d3.zoom().on('zoom', handleZoom);
-  d3.select('svg').call(zoomBehavior);
+  d3.select(query('svg')).call(zoomBehavior);
 
   const colorNodes = d3.scaleOrdinal(d3.schemeCategory10);
   const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
@@ -127,38 +129,43 @@ export const d3ForceGraph = (store, blockchain, settings) => {
   };
 
   const drawTransactionDetails = (items) => {
+    const WIDTH = 5;
     items
       .append((node) => {
         const ns = 'http://www.w3.org/2000/svg';
         const group = document.createElementNS(ns, 'g');
-        group.setAttribute('classes', 'vin');
 
-        const calcVinY = (tx, vin) => (nodeHeight / tx.vin.length)
-        * (tx.vin.indexOf(vin) + 0.5);
-        const vinLines = node.tx.vin.map((vin) => {
+        const createLine = (styleClass, x1, y1, x2, y2) => {
           const line = document.createElementNS(ns, 'line');
-          line.setAttribute('class', 'vin');
-          line.setAttribute('x1', 0);
-          line.setAttribute('y1', calcVinY(node.tx, vin));
-          line.setAttribute('x2', -5);
-          line.setAttribute('y2', calcVinY(node.tx, vin));
+          line.setAttribute('class', styleClass);
+          line.setAttribute('x1', x1);
+          line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2);
+          line.setAttribute('y2', y2);
           return line;
-        });
+        };
 
-        const calcVoutY = (tx, vout) => (nodeHeight / tx.vout.length)
-        * (tx.vout.indexOf(vout) + 0.5);
-        const voutLines = node.tx.vout.map((vout) => {
-          const line = document.createElementNS(ns, 'line');
-          line.setAttribute('class', 'vout');
-          line.setAttribute('x1', nodeWidth);
-          line.setAttribute('y1', calcVoutY(node.tx, vout));
-          line.setAttribute('x2', nodeWidth + 5);
-          line.setAttribute('y2', calcVoutY(node.tx, vout));
-          return line;
-        });
+        if (node.tx.vin.length < 11) {
+          const calcVinY = (tx, vin) => (nodeHeight / tx.vin.length)
+           * (tx.vin.indexOf(vin) + 0.5);
 
-        vinLines.forEach((l) => group.appendChild(l));
-        voutLines.forEach((l) => group.appendChild(l));
+          node.tx.vin
+            .map((vin) => createLine(0, calcVinY(node.tx, vin), -WIDTH, calcVinY(node.tx, vin)))
+            .forEach((l) => group.appendChild(l));
+        } else {
+          group.appendChild(createLine('vin many', -WIDTH, nodeHeight / 2, 0, nodeHeight / 2));
+        }
+
+        if (node.tx.vout.length < 11) {
+          const calcVoutY = (tx, vout) => (nodeHeight / tx.vout.length)
+           * (tx.vout.indexOf(vout) + 0.5);
+
+          node.tx.vout
+            .map((vout) => createLine('vout', nodeWidth, calcVoutY(node.tx, vout), nodeWidth + WIDTH, calcVoutY(node.tx, vout)))
+            .forEach((l) => group.appendChild(l));
+        } else {
+          group.appendChild(createLine('vout many', nodeWidth, nodeHeight / 2, nodeWidth + WIDTH, nodeHeight / 2));
+        }
 
         return group;
       });
@@ -206,7 +213,7 @@ export const d3ForceGraph = (store, blockchain, settings) => {
   simulation.on('tick', () => {
     link.attr('d', linkGen);
 
-    d3.selectAll('.node_block')
+    d3.selectAll(queryAll('.node_block'))
       .attr('transform', (d) => `translate(${d.x},${d.y})`);
   });
 
@@ -216,7 +223,7 @@ export const d3ForceGraph = (store, blockchain, settings) => {
       .map((s) => s.id);
 
     d3
-      .selectAll('.node_rect')
+      .selectAll(queryAll('.node_rect'))
       .attr('class', (n) => `node_rect ${txIds.includes(n.tx.txid) ? 'selected' : ''}`);
   });
 

@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import { observe } from '../../model/store';
-import { Base } from './base';
+import { observe } from '../../../model/store';
+import { Base } from '../base';
 import css from './notifications.css';
 
 export class Notifications extends Base {
