@@ -1,0 +1,29 @@
+.container {
+    height: 100%;
+    width: 100%;
+}
+
+  .selected {
+    outline: 3px solid yellow;
+  }
+  
+  .vin.many {
+    stroke: yellow;
+    stroke-width: 2px;
+  }
+
+  .vout.many {
+    stroke: yellow;
+    stroke-width: 2px;
+
+  }
+
+  .vin {
+    stroke: white;
+    stroke-width: 0.5px;
+
+  }
+  .vout {
+    stroke: white;
+    stroke-width: 0.5px;
+  }

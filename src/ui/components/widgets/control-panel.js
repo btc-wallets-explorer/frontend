@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import { setForceStrength } from '../../model/ui.reducer';
-import { Base } from './base';
+import { setForceStrength } from '../../../model/ui.reducer';
+import { Base } from '../base';
 import css from './control-panel.css';
 
 export class ControlPanel extends Base {
