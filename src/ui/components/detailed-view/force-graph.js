@@ -150,7 +150,7 @@ export const d3ForceGraph = (root, store, blockchain, settings) => {
            * (tx.vin.indexOf(vin) + 0.5);
 
           node.tx.vin
-            .map((vin) => createLine(0, calcVinY(node.tx, vin), -WIDTH, calcVinY(node.tx, vin)))
+            .map((vin) => createLine('vin', 0, calcVinY(node.tx, vin), -WIDTH, calcVinY(node.tx, vin)))
             .forEach((l) => group.appendChild(l));
         } else {
           group.appendChild(createLine('vin many', -WIDTH, nodeHeight / 2, 0, nodeHeight / 2));
