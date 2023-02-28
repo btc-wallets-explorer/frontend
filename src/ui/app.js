@@ -1,20 +1,18 @@
 import { html } from 'lit';
-import { generateModel } from '../modules/model-generation';
 import { setSettings } from '../model/settings.reducer.';
-import { createNewStore, observe } from '../model/store';
+import { createNewStore } from '../model/store';
 import { addWallets } from '../model/wallets.reducer';
+import { generateModel } from '../modules/model-generation';
 
-import { createConnection } from '../modules/api';
 import { setBlockchain } from '../model/blockchain.reducer';
-import { createApiMock } from '../../test/test-helpers';
-import basicTestData from '../../test/test-data/basic-test-data';
+import { createConnection } from '../modules/api';
 import appCss from './app.css';
 import { Base } from './components/base';
-import { d3ForceGraph } from './components/detailed-view/force-graph';
 
 export class App extends Base {
   static properties = {
     store: {},
+    backendUrl: {},
   };
 
   constructor() {
@@ -26,7 +24,9 @@ export class App extends Base {
     super.connectedCallback();
 
     const fetchData = async () => {
-      const api = await createConnection();
+      const backendUrl = this.getAttribute('backend-url');
+      console.log('Connecting to ', backendUrl);
+      const api = await createConnection(backendUrl);
       // const api = await createApiMock(basicTestData);
 
       const settings = await api.getSettings();

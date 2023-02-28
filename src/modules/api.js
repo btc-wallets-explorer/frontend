@@ -1,4 +1,4 @@
-export const createConnection = (url = 'ws://localhost:8080') => {
+export const createConnection = (url) => {
   const ws = new WebSocket(url);
 
   const connection = {
