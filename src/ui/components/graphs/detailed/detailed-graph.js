@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import { observe } from '../../../model/store';
-import { Base } from '../base';
+import { observe } from '../../../../model/store';
+import { Base } from '../../base';
 import css from './detailed-graph.css';
 import { d3ForceGraph } from './force-graph';
 
@@ -13,6 +13,7 @@ export class DetailedGraph extends Base {
     });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   show() {
     return html`
       <style>${css}</style>

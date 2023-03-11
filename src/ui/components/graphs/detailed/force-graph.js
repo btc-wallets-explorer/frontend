@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import watch from 'redux-watch';
-import { addSelection, removeSelection } from '../../../model/ui.reducer';
-import { createNetwork } from './network-generation';
+import { addSelection, removeSelection } from '../../../../model/ui.reducer';
+import { createNetwork } from '../network-generation';
 
 const nodeWidth = 10;
 const nodeHeight = 20;

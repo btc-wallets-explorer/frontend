@@ -5,6 +5,8 @@ import { addWallets } from '../model/wallets.reducer';
 import { generateModel } from '../modules/model-generation';
 
 import { setBlockchain } from '../model/blockchain.reducer';
+import { createApiMock } from '../../test/test-helpers';
+import basicTestData from '../../test/test-data/basic-test-data';
 import { createConnection } from '../modules/api';
 import appCss from './app.css';
 import { Base } from './components/base';
@@ -49,7 +51,7 @@ export class App extends Base {
 
     <div class="page">
       <div class="detailed-view">
-        <detailed-graph .store=${this.store}></detailed-graph>
+        <overview-graph .store=${this.store}></overview-graph>
       </div>
 
       <div class="widgets">
