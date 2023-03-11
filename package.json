@@ -9,7 +9,7 @@
     "build": "webpack --mode=development"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@blockchainofthings/btc-output-descriptor": "^1.0.1",
     "@reduxjs/toolkit": "^1.9.2",
