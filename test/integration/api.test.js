@@ -1,7 +1,7 @@
 import { createConnection } from '../../src/modules/api';
 
 describe('when connection exists', () => {
-  const setup = async () => createConnection();
+  const setup = async () => createConnection('ws://localhost:8080');
 
   describe('transactions', () => {
     it('fetches transactions by txId', async () => {

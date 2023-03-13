@@ -4,12 +4,12 @@ module.exports = (config) => {
   config.set({
     frameworks: ['jasmine', 'webpack', 'iframes'],
     files: [
-      { pattern: 'test/**/*.test.js' },
+      { pattern: 'test/unit/**/*.test.js' },
     ],
     exclude: [
     ],
     preprocessors: {
-      'test/**/*.test.js': ['webpack', 'iframes'],
+      'test/unit/**/*.test.js': ['webpack', 'iframes'],
     },
     reporters: ['progress', 'coverage-istanbul'],
     port: 9876,

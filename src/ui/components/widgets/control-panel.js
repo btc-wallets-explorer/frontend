@@ -23,8 +23,16 @@ export class ControlPanel extends Base {
         </div>
       `);
 
+    const toggleMode = (detailedMode) => {
+      console.log(detailedMode);
+    };
+
     return html`
       <div class="container">
+        <label>
+          <input id="toggle-mode" type="checkbox" @click=${(e) => toggleMode(e.target.checked)}>
+          <span>Mode switch </span>
+        </label>
         ${forceControl}
       </div>
     `;

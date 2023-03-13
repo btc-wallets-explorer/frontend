@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import { setSettings } from '../model/settings.reducer.';
-import { createNewStore } from '../model/store';
 import { addWallets } from '../model/wallets.reducer';
 import { generateModel } from '../modules/model-generation';
 
@@ -10,16 +9,16 @@ import basicTestData from '../../test/test-data/basic-test-data';
 import { createConnection } from '../modules/api';
 import appCss from './app.css';
 import { Base } from './components/base';
+import { ELEMENTS, getState } from '../state';
 
 export class App extends Base {
   static properties = {
-    store: {},
     backendUrl: {},
   };
 
   constructor() {
     super();
-    this.store = createNewStore();
+    this.store = getState(ELEMENTS.STORE);
   }
 
   connectedCallback() {
@@ -51,13 +50,13 @@ export class App extends Base {
 
     <div class="page">
       <div class="detailed-view">
-        <overview-graph .store=${this.store}></overview-graph>
+        <overview-graph></overview-graph>
       </div>
 
       <div class="widgets">
-        <control-panel class='control' .store=${this.store}></control-panel>
-        <notifications-panel class='notifications' .store=${this.store}></notifications-panel>
-        <selection-info class='info' .store=${this.store}></selection-info>
+        <control-panel class='control'></control-panel>
+        <notifications-panel class='notifications'></notifications-panel>
+        <selection-info class='info'></selection-info>
       </div>
 
     </div>
