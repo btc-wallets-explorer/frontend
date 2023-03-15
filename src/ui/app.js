@@ -10,19 +10,24 @@ import { createConnection } from '../modules/api';
 import appCss from './app.css';
 import { Base } from './components/base';
 import { ELEMENTS, getState } from '../state';
+import { observe } from '../model/store';
 
 export class App extends Base {
   static properties = {
     backendUrl: {},
+    mode: {},
   };
 
   constructor() {
     super();
     this.store = getState(ELEMENTS.STORE);
+    this.mode = this.store.getState().ui.mode;
   }
 
   connectedCallback() {
     super.connectedCallback();
+
+    observe(this.store, 'ui.mode', (mode) => { this.mode = mode; });
 
     const fetchData = async () => {
       const backendUrl = this.getAttribute('backend-url');
@@ -45,12 +50,14 @@ export class App extends Base {
   }
 
   show() {
+    const isDetailMode = this.mode === 'detail';
     return html`
     <style>${appCss}</style>
 
     <div class="page">
-      <div class="detailed-view">
-        <overview-graph></overview-graph>
+      <div class="graph-view">
+        <overview-graph style="display: ${isDetailMode ? 'none' : 'block'}"></overview-graph>
+        <detailed-graph style="display: ${isDetailMode ? 'block' : 'none'}"></detailed-graph>
       </div>
 
       <div class="widgets">

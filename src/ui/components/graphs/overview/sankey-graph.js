@@ -1,18 +1,13 @@
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
-import watch from 'redux-watch';
 import { addSelection, removeSelection } from '../../../../model/ui.reducer';
 import { createNetwork } from '../network-generation';
 
-const nodeWidth = 10;
-const nodeHeight = 20;
-
 export const sankeyGraph = (root, store, blockchain, settings) => {
   const query = (q) => root.shadowRoot.querySelector(q);
-  const queryAll = (q) => root.shadowRoot.querySelectorAll(q);
-  const observe = (path, callback) => store.subscribe(watch(store.getState, path)(callback));
 
   const network = createNetwork(blockchain);
+  if (network.nodes.length === 0) { return; }
   console.log(network);
 
   const margin = {

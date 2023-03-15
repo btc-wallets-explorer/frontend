@@ -1,14 +1,25 @@
 import { html } from 'lit';
-import { setForceStrength } from '../../../model/ui.reducer';
+import { classMap } from 'lit-html/directives/class-map.js';
+import { observe } from '../../../model/store';
+import { setForceStrength, setViewingMode } from '../../../model/ui.reducer';
 import { Base } from '../base';
 import css from './control-panel.css';
 
 export class ControlPanel extends Base {
-  static css = css;
+  static properties = {
+    mode: {},
+  };
+
+  constructor() {
+    super();
+    this.mode = 'overview';
+  }
 
   connectedCallback() {
     super.connectedCallback();
     this.forceStrength = this.store.getState().ui.forceStrength;
+
+    observe(this.store, 'ui.mode', (mode) => { this.mode = mode; });
   }
 
   show() {
@@ -24,16 +35,19 @@ export class ControlPanel extends Base {
       `);
 
     const toggleMode = (detailedMode) => {
-      console.log(detailedMode);
+      this.store.dispatch(setViewingMode(detailedMode ? 'detail' : 'overview'));
     };
 
     return html`
+      <style>${css}</style>
       <div class="container">
         <label>
           <input id="toggle-mode" type="checkbox" @click=${(e) => toggleMode(e.target.checked)}>
-          <span>Mode switch </span>
+          <span>Detail mode</span>
         </label>
-        ${forceControl}
+        <div class='force-control ${classMap({ disabled: this.mode === 'overview' })}'>
+          ${forceControl}
+        </div>
       </div>
     `;
   }

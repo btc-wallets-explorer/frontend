@@ -2,6 +2,8 @@
 import { createReducer, createAction } from '@reduxjs/toolkit';
 import _ from 'lodash';
 
+export const setViewingMode = createAction('ui/mode/set');
+
 export const setForceStrength = createAction('ui/force/set');
 
 export const sendNotification = createAction('ui/notification/send');
@@ -12,6 +14,7 @@ export const clearSelections = createAction('ui/selection/clear');
 
 export const uiReducer = createReducer(
   {
+    mode: 'overview',
     notifications: [],
     selections: [],
     forceStrength: {
@@ -23,6 +26,10 @@ export const uiReducer = createReducer(
     },
   },
   (builder) => builder
+    .addCase(setViewingMode, (state, action) => ({
+      ...state,
+      mode: action.payload,
+    }))
     .addCase(setForceStrength, (state, action) => ({
       ...state,
       forceStrength: { ...state.forceStrength, [action.payload.target]: action.payload.value },

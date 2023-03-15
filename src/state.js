@@ -28,5 +28,10 @@ const injectState = (name, value) => {
 
   stateObjects[name] = value;
 };
+const resetState = () => {
+  Object.keys(stateObjects).forEach((key) => delete stateObjects[key]);
+};
 
-module.exports = { ELEMENTS, getState, injectState };
+module.exports = {
+  ELEMENTS, getState, injectState, resetState,
+};

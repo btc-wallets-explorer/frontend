@@ -1,6 +1,6 @@
 import { createNewStore } from '../../../src/model/store';
 import {
-  addSelection, clearSelections, removeSelection, sendNotification,
+  addSelection, clearSelections, removeSelection, sendNotification, setViewingMode,
 } from '../../../src/model/ui.reducer';
 
 describe('ui reducer', () => {
@@ -11,6 +11,7 @@ describe('ui reducer', () => {
 
   it('has empty initial values', () => {
     expect(store.getState().ui).toEqual({
+      mode: 'overview',
       notifications: [],
       selections: [],
       forceStrength: {
@@ -65,5 +66,11 @@ describe('ui reducer', () => {
 
     const actual = store.getState().ui;
     expect(actual.selections).toEqual([]);
+  });
+
+  it('sets the viewing mode', () => {
+    store.dispatch(setViewingMode('detail'));
+
+    expect(store.getState().ui.mode).toEqual('detail');
   });
 });

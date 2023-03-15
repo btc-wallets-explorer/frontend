@@ -55,4 +55,8 @@ export class TestUtils {
       requestComponent();
     });
   }
+
+  static async timeout(ms = 0) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 }
