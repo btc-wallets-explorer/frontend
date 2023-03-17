@@ -1,5 +1,6 @@
 const ELEMENTS = Object.freeze({
   STORE: 'store',
+  BACKEND_CONNECTION: 'backend-connection',
 });
 
 const stateObjects = {

@@ -35,7 +35,7 @@ describe('Control Panel', () => {
     expect(store.getState().ui.mode).toEqual('overview');
   });
 
-  fit('does not show force properties in overview mode', async () => {
+  it('does not show force properties in overview mode', async () => {
     store.dispatch(setViewingMode('detail'));
     await TestUtils.timeout();
     expect(element.shadowRoot.querySelector('.force-control')).not.toHaveClass('disabled');

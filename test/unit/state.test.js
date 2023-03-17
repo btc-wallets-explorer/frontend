@@ -1,6 +1,13 @@
 import { ELEMENTS, getState, injectState } from '../../src/state';
 
 describe('State', () => {
+  it('exports state elements', () => {
+    expect(ELEMENTS).toEqual({
+      STORE: 'store',
+      BACKEND_CONNECTION: 'backend-connection',
+    });
+  });
+
   it('injecting/getting state works as expected', () => {
     expect(() => {
       getState('does-not-exist');

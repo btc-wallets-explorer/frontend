@@ -46,6 +46,7 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-verbose-reporter": "^0.0.8",
     "karma-webpack": "^5.0.0",
+    "mock-socket": "^9.2.1",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "swank-js": "0.0.5",
     "to-string-loader": "^1.2.0",

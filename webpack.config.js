@@ -3,11 +3,12 @@ const baseConfig = require('./webpack.config.base');
 
 module.exports = {
   entry: {
+    config: ['./assets/config.js'],
     app: ['./src/main.js'],
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle-front.js',
+    filename: '[name].js',
     clean: true,
   },
   watch: false,

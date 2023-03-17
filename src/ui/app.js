@@ -4,17 +4,13 @@ import { addWallets } from '../model/wallets.reducer';
 import { generateModel } from '../modules/model-generation';
 
 import { setBlockchain } from '../model/blockchain.reducer';
-import { createApiMock } from '../../test/test-helpers';
-import basicTestData from '../../test/test-data/basic-test-data';
-import { createConnection } from '../modules/api';
+import { observe } from '../model/store';
+import { ELEMENTS, getState } from '../state';
 import appCss from './app.css';
 import { Base } from './components/base';
-import { ELEMENTS, getState } from '../state';
-import { observe } from '../model/store';
 
 export class App extends Base {
   static properties = {
-    backendUrl: {},
     mode: {},
   };
 
@@ -30,9 +26,8 @@ export class App extends Base {
     observe(this.store, 'ui.mode', (mode) => { this.mode = mode; });
 
     const fetchData = async () => {
-      const backendUrl = this.getAttribute('backend-url');
-      console.log('Connecting to ', backendUrl);
-      const api = await createConnection(backendUrl);
+      console.log('Connecting to ', window.bwe['backend-url']);
+      const api = getState(ELEMENTS.BACKEND_CONNECTION);
       // const api = await createApiMock(basicTestData);
 
       const settings = await api.getSettings();

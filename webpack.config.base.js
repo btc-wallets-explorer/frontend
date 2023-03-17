@@ -1,6 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
-const templateParameters = require('./assets/parameters.json');
 
 module.exports = {
   mode: 'development',
@@ -17,7 +16,6 @@ module.exports = {
     new NodePolyfillPlugin(),
     new HtmlWebpackPlugin({
       template: 'assets/index.html',
-      templateParameters,
     }),
   ],
   resolve: {
