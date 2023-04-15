@@ -6,7 +6,7 @@
     "start": "webpack server --open --mode=development --devtool=inline-source-map",
     "test": "CHROME_BIN=chromium karma start",
     "test:integration": "CHROME_BIN=chromium karma start karma.conf.integration.js",
-    "test:single": "CHROME_BIN=chromium KARMA_SPEC=$(find . -iname $MATCH) karma start karma.conf.single.js",
+    "test:single": "CHROME_BIN=chromium karma start karma.conf.single.js",
     "build": "webpack --mode=development"
   },
   "author": "",
@@ -48,6 +48,7 @@
     "karma-webpack": "^5.0.0",
     "mock-socket": "^9.2.1",
     "node-polyfill-webpack-plugin": "^2.0.1",
+    "sinon": "^15.0.2",
     "swank-js": "0.0.5",
     "to-string-loader": "^1.2.0",
     "webpack": "^5.75.0",

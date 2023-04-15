@@ -1,13 +1,13 @@
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
-import { addSelection, removeSelection } from '../../../../model/ui.reducer';
+import { addSelection, removeSelection } from '../../../model/ui.reducer';
 import { createNetwork } from '../network-generation';
 
 export const toOverviewModel = (network) => {
 
 };
 
-export const sankeyGraph = (root, store, blockchain, settings) => {
+export const d3OverviewGraph = (root, store, blockchain, settings) => {
   const query = (q) => root.shadowRoot.querySelector(q);
 
   const network = createNetwork(blockchain);

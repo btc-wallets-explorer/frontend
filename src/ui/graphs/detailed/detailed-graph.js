@@ -1,15 +1,15 @@
 import { html } from 'lit';
-import { observe } from '../../../../model/store';
+import { observe } from '../../../model/store';
 import { Base } from '../../base';
-import css from './overview-graph.css';
-import { sankeyGraph } from './sankey-graph';
+import css from './detailed-graph.css';
+import { d3ForceGraph } from './force-graph';
 
-export class OverviewGraph extends Base {
+export class DetailedGraph extends Base {
   connectedCallback() {
     super.connectedCallback();
 
     observe(this.store, 'blockchain', (blockchain) => {
-      sankeyGraph(this, this.store, blockchain, this.store.getState().settings);
+      d3ForceGraph(this, this.store, blockchain, this.store.getState().settings);
     });
   }
 
@@ -22,5 +22,5 @@ export class OverviewGraph extends Base {
     `;
   }
 
-  static get tag() { return 'overview-graph'; }
+  static get tag() { return 'detailed-graph'; }
 }

@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import watch from 'redux-watch';
-import { addSelection, removeSelection } from '../../../../model/ui.reducer';
+import { addSelection, removeSelection } from '../../../model/ui.reducer';
 import { createNetwork } from '../network-generation';
 
 const nodeWidth = 10;
@@ -145,7 +145,7 @@ export const d3ForceGraph = (root, store, blockchain, settings) => {
           return line;
         };
 
-        if (node.tx.vin.length < 11) {
+        if (node.tx && node.tx.vin.length < 11) {
           const calcVinY = (tx, vin) => (nodeHeight / tx.vin.length)
            * (tx.vin.indexOf(vin) + 0.5);
 
@@ -156,7 +156,7 @@ export const d3ForceGraph = (root, store, blockchain, settings) => {
           group.appendChild(createLine('vin many', -WIDTH, nodeHeight / 2, 0, nodeHeight / 2));
         }
 
-        if (node.tx.vout.length < 11) {
+        if (node.tx && node.tx.vout.length < 11) {
           const calcVoutY = (tx, vout) => (nodeHeight / tx.vout.length)
            * (tx.vout.indexOf(vout) + 0.5);
 

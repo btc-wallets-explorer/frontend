@@ -4,22 +4,18 @@ import {
   ELEMENTS, getState,
 } from '../../src/state';
 import { App } from '../../src/ui/app';
-import { DetailedGraph } from '../../src/ui/components/graphs/detailed/detailed-graph';
-import { OverviewGraph } from '../../src/ui/components/graphs/overview/overview-graph';
-import { ControlPanel } from '../../src/ui/components/widgets/control-panel';
-import { Notifications } from '../../src/ui/components/widgets/notifications';
-import { SelectionInfo } from '../../src/ui/components/widgets/selection-info';
+import { DetailedGraph } from '../../src/ui/graphs/detailed/detailed-graph';
+import { OverviewGraph } from '../../src/ui/graphs/overview/overview-graph';
+import { ControlPanel } from '../../src/ui/widgets/control-panel';
+import { Notifications } from '../../src/ui/widgets/notifications';
+import { SelectionInfo } from '../../src/ui/widgets/selection-info';
 
 describe('Main', () => {
   it('sets up the state and registers web components', async () => {
     const mockUrl = 'ws://localhost:9999';
-    const mockServer = new Server(mockUrl);
 
-    mockServer.on('connection', (socket) => {
-      socket.on('message', (data) => {
-        socket.send('test message from mock server');
-      });
-    });
+    const mockServer = new Server(mockUrl);
+    mockServer.on('connection', () => {});
 
     window.bwe = { 'backend-url': mockUrl };
     await initialize();

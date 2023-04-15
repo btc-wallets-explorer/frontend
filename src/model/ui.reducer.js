@@ -2,6 +2,11 @@
 import { createReducer, createAction } from '@reduxjs/toolkit';
 import _ from 'lodash';
 
+export const VIEWING_MODES = Object.freeze({
+  OVERVIEW: 'overview',
+  DETAIL: 'deatil',
+});
+
 export const setViewingMode = createAction('ui/mode/set');
 
 export const setForceStrength = createAction('ui/force/set');

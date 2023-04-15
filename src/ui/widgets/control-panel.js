@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { classMap } from 'lit-html/directives/class-map.js';
-import { observe } from '../../../model/store';
-import { setForceStrength, setViewingMode } from '../../../model/ui.reducer';
+import { observe } from '../../model/store';
+import { VIEWING_MODES, setForceStrength, setViewingMode } from '../../model/ui.reducer';
 import { Base } from '../base';
 import css from './control-panel.css';
 
@@ -35,7 +35,9 @@ export class ControlPanel extends Base {
       `);
 
     const toggleMode = (detailedMode) => {
-      this.store.dispatch(setViewingMode(detailedMode ? 'detail' : 'overview'));
+      this.store.dispatch(
+        setViewingMode(detailedMode ? VIEWING_MODES.DETAIL : VIEWING_MODES.OVERVIEW),
+      );
     };
 
     return html`

@@ -1,9 +1,9 @@
 import { App } from './app';
-import { DetailedGraph } from './components/graphs/detailed/detailed-graph';
-import { OverviewGraph } from './components/graphs/overview/overview-graph';
-import { ControlPanel } from './components/widgets/control-panel';
-import { Notifications } from './components/widgets/notifications';
-import { SelectionInfo } from './components/widgets/selection-info';
+import { DetailedGraph } from './graphs/detailed/detailed-graph';
+import { OverviewGraph } from './graphs/overview/overview-graph';
+import { ControlPanel } from './widgets/control-panel';
+import { Notifications } from './widgets/notifications';
+import { SelectionInfo } from './widgets/selection-info';
 
 export const registerWebComponents = () => {
   window.customElements.define(ControlPanel.tag, ControlPanel);

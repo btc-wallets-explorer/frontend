@@ -7,7 +7,8 @@ import { setBlockchain } from '../model/blockchain.reducer';
 import { observe } from '../model/store';
 import { ELEMENTS, getState } from '../state';
 import appCss from './app.css';
-import { Base } from './components/base';
+import { Base } from './base';
+import { VIEWING_MODES } from '../model/ui.reducer';
 
 export class App extends Base {
   static properties = {
@@ -26,7 +27,6 @@ export class App extends Base {
     observe(this.store, 'ui.mode', (mode) => { this.mode = mode; });
 
     const fetchData = async () => {
-      console.log('Connecting to ', window.bwe['backend-url']);
       const api = getState(ELEMENTS.BACKEND_CONNECTION);
       // const api = await createApiMock(basicTestData);
 
@@ -45,7 +45,7 @@ export class App extends Base {
   }
 
   show() {
-    const isDetailMode = this.mode === 'detail';
+    const isDetailMode = this.mode === VIEWING_MODES.DETAIL;
     return html`
     <style>${appCss}</style>
 

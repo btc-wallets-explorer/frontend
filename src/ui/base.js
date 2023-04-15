@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { ELEMENTS, getState } from '../../state';
+import { ELEMENTS, getState } from '../state';
 import baseCss from './base.css';
 
 export class Base extends LitElement {

@@ -1,5 +1,6 @@
 import { createNewStore } from '../../../src/model/store';
 import {
+  VIEWING_MODES,
   addSelection, clearSelections, removeSelection, sendNotification, setViewingMode,
 } from '../../../src/model/ui.reducer';
 
@@ -69,8 +70,8 @@ describe('ui reducer', () => {
   });
 
   it('sets the viewing mode', () => {
-    store.dispatch(setViewingMode('detail'));
+    store.dispatch(setViewingMode(VIEWING_MODES.DETAIL));
 
-    expect(store.getState().ui.mode).toEqual('detail');
+    expect(store.getState().ui.mode).toEqual(VIEWING_MODES.DETAIL);
   });
 });

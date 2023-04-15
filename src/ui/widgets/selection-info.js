@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { observe } from '../../../model/store';
+import { observe } from '../../model/store';
 import { Base } from '../base';
 import css from './selection-info.css';
 
