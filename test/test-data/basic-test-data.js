@@ -5,6 +5,8 @@ const settings = {
   'block-explorer-url': 'https://mempool.some.domain:8080/tx/',
 };
 
+const otherDescriptor = 'wpkh(xpub6EPyu9pwv6tXVxQrkXjJ2ZBN3Q2ox8Kf1YapGw5kNJ9XMVDroGybQ87ZKLAWhqGeTTwFTYnrC9AV4bFFNUP92ysiKFC4fX9fMjsa6Rcq1Hd)';
+
 const wallets = [
   {
     name: 'w1',
@@ -36,6 +38,15 @@ const addr = (walletName, startIdx, outputDesc = 0) => {
   return expression.addresses[0];
 };
 
+const otherAddr = (startIdx) => {
+  const expression = BtcOutDesc.parse(otherDescriptor, 'main');
+  expression.keyRange = {
+    startIdx,
+    count: 1,
+  };
+  return expression.addresses[0];
+};
+
 const sh = toScriptHash;
 
 const transactions = [
@@ -43,8 +54,8 @@ const transactions = [
     txid: 'tx1',
     vin: [
       { txid: 'xx1', vout: 0 },
-      { txid: 'xx2', vout: 1 },
-      { txid: 'xx3', vout: 2 },
+      { txid: 'xx1', vout: 1 },
+      { txid: 'xx2', vout: 2 },
     ],
     vout: [
       { value: 0.1, scriptPubKey: { address: addr('w1', 0) } },
@@ -56,13 +67,13 @@ const transactions = [
   {
     txid: 'tx2',
     vin: [
-      { txid: 'xxx1', vout: 0 },
+      { txid: 'xx3', vout: 0 },
       { txid: 'tx1', vout: 0 },
     ],
 
     vout: [
       { value: 0.1, scriptPubKey: { address: addr('w2', 1) } },
-      { value: 0.1, scriptPubKey: { address: 'out1' } },
+      { value: 0.1, scriptPubKey: { address: otherAddr(0) } },
     ],
     time: 300,
   },
@@ -87,7 +98,7 @@ const transactions = [
 
     vout: [
       { value: 0.1, scriptPubKey: { address: addr('w2', 3) } },
-      { value: 0.1, scriptPubKey: { address: 'out2' } },
+      { value: 0.1, scriptPubKey: { address: otherAddr(1) } },
     ],
     time: 430,
   },

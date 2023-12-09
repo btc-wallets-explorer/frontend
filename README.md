@@ -2,7 +2,7 @@
 ## Run Tests
 ```
 npm run test
-MATCH='control-panel.test.js npm run test:single'
+KARMA_SPEC='**/d3-overview-graph.test.js' npm run test:single
 ```
 
 # Architecture
@@ -16,4 +16,15 @@ Redux base model:
         utxos: [],
     }
 }
+```
+
+# Testing
+
+There is the possibility of using test data. 
+One way is filling the redux store directly with the test data.
+
+Another way is mocking the 'api' to provide the test data objects.
+
+```
+const api = createApiMock(basicTestData);
 ```
