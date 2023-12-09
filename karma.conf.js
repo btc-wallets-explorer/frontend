@@ -1,41 +1,12 @@
-const webpackConfig = require('./webpack.config.base');
+const baseConfig = require("./karma.conf.base");
 
 module.exports = (config) => {
+  baseConfig(config);
   config.set({
-    frameworks: ['jasmine', 'webpack', 'iframes'],
-    files: [
-      { pattern: 'test/**/*.test.js' },
-    ],
-    exclude: [
-    ],
+    frameworks: ["jasmine", "webpack", "iframes"],
     preprocessors: {
-      'test/**/*.test.js': ['webpack', 'iframes'],
+      "test/unit/**/*.test.js": ["webpack", "iframes"],
     },
-    reporters: ['progress', 'coverage-istanbul'],
-    port: 9876,
-    colors: true,
-    logLevel: config.INFO,
-    autoWatch: true,
-
-    browsers: [
-      'ChromeDebugging',
-    ],
-
-    customLaunchers: {
-      ChromeDebugging: {
-        base: 'ChromeHeadless',
-        flags: ['--remote-debugging-port=9333'],
-      },
-    },
-    singleRun: false,
-    concurrency: Infinity,
-    webpack: webpackConfig,
-
-    browserConsoleLogOptions: {
-      level: 'debug',
-      format: '%b %T: %m',
-      terminal: true,
-      path: 'console.log',
-    },
+    files: [{ pattern: "test/unit/**/*.test.js" }],
   });
 };

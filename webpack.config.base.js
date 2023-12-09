@@ -1,23 +1,22 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
-const templateParameters = require('./assets/parameters.json');
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 module.exports = {
-  mode: 'development',
-  devtool: 'inline-source-map',
-  target: 'web',
+  mode: "development",
+  devtool: "inline-source-map",
+  target: "web",
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: ['to-string-loader', 'css-loader'],
-      }],
+        use: ["to-string-loader", "css-loader"],
+      },
+    ],
   },
   plugins: [
     new NodePolyfillPlugin(),
     new HtmlWebpackPlugin({
-      template: 'assets/index.html',
-      templateParameters,
+      template: "assets/index.html",
     }),
   ],
   resolve: {
@@ -28,5 +27,4 @@ module.exports = {
       fs: false,
     },
   },
-
 };

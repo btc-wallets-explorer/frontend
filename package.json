@@ -5,7 +5,8 @@
   "scripts": {
     "start": "webpack server --open --mode=development --devtool=inline-source-map",
     "test": "CHROME_BIN=chromium karma start",
-    "test:single": "CHROME_BIN=chromium KARMA_SPEC=$(find . -iname $MATCH) karma start karma.conf.single.js",
+    "test:integration": "CHROME_BIN=chromium karma start karma.conf.integration.js",
+    "test:single": "CHROME_BIN=chromium karma start karma.conf.single.js",
     "build": "webpack --mode=development"
   },
   "author": "",
@@ -20,6 +21,7 @@
     "d3-color": "^3.1.0",
     "d3-drag": "^3.0.0",
     "d3-force": "^3.0.0",
+    "d3-sankey": "^0.12.3",
     "d3-selection": "^3.0.0",
     "lit": "^2.6.1",
     "lit-element": "^3.2.2",
@@ -31,9 +33,6 @@
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
-    "eslint": "^8.31.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.26.0",
     "html-webpack-plugin": "^5.5.0",
     "jasmine-core": "^4.5.0",
     "karma": "^6.4.1",
@@ -44,7 +43,10 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-verbose-reporter": "^0.0.8",
     "karma-webpack": "^5.0.0",
+    "mock-socket": "^9.2.1",
     "node-polyfill-webpack-plugin": "^2.0.1",
+    "prettier": "3.1.0",
+    "sinon": "^15.0.2",
     "swank-js": "0.0.5",
     "to-string-loader": "^1.2.0",
     "webpack": "^5.75.0",

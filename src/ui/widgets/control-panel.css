@@ -1,0 +1,13 @@
+.disabled {
+  display: none !important;
+}
+
+.container {
+  height: 100%;
+}
+
+.force-control {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}

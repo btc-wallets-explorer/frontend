@@ -1,13 +1,13 @@
-import { setBlockchain } from '../../../src/model/blockchain.reducer';
-import { createNewStore } from '../../../src/model/store';
+import { setBlockchain } from "../../../src/model/blockchain.reducer";
+import { createNewStore } from "../../../src/model/store";
 
-describe('blockchain reducer', () => {
+describe("blockchain reducer", () => {
   let store;
   beforeEach(() => {
     store = createNewStore();
   });
 
-  it('has empty initial values', () => {
+  it("has empty initial values", () => {
     expect(store.getState().blockchain).toEqual({
       transactions: {},
       scriptHashes: {},
@@ -15,11 +15,11 @@ describe('blockchain reducer', () => {
     });
   });
 
-  it('sets the model', () => {
+  it("sets the model", () => {
     const expected = {
-      transactions: { tx1: { txid: 'tx1' } },
-      scriptHashes: { sh1: { scriptHash: 'sh1' } },
-      utxos: { sh1: { scriptHash: 'sh1', utxos: [] } },
+      transactions: { tx1: { txid: "tx1" } },
+      scriptHashes: { sh1: { scriptHash: "sh1" } },
+      utxos: { sh1: { scriptHash: "sh1", utxos: [] } },
     };
 
     store.dispatch(setBlockchain(expected));
