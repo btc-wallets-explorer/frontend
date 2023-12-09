@@ -1,3 +1,3 @@
-import { initialize } from './init';
+import { initialize } from "./init";
 
 initialize();

@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
-import { createReducer, createAction } from '@reduxjs/toolkit';
+import { createReducer, createAction } from "@reduxjs/toolkit";
 
-export const setBlockchain = createAction('blockchain/set');
+export const setBlockchain = createAction("blockchain/set");
 
 export const blockchainReducer = createReducer(
   {
@@ -9,5 +9,6 @@ export const blockchainReducer = createReducer(
     scriptHashes: {},
     utxos: {},
   },
-  (builder) => builder.addCase(setBlockchain, (state, action) => action.payload),
+  (builder) =>
+    builder.addCase(setBlockchain, (state, action) => action.payload),
 );

@@ -1,7 +1,7 @@
-import { html } from 'lit';
-import { observe } from '../../model/store';
-import { Base } from '../base';
-import css from './notifications.css';
+import { html } from "lit";
+import { observe } from "../../model/store";
+import { Base } from "../base";
+import css from "./notifications.css";
 
 export class Notifications extends Base {
   static properties = {
@@ -15,20 +15,24 @@ export class Notifications extends Base {
 
   connectedCallback() {
     super.connectedCallback();
-    observe(this.store, 'ui.notifications', (notifications) => {
+    observe(this.store, "ui.notifications", (notifications) => {
       this.notifications = notifications;
     });
   }
 
   show() {
-    const content = this.notifications.map((n) => html`${n.title}: ${n.content}<br/>`);
+    const content = this.notifications.map(
+      (n) => html`${n.title}: ${n.content}<br />`,
+    );
     return html`
-      <style>${css}</style>
-      <div class="container">
-        ${content}
-      </div>
+      <style>
+        ${css}
+      </style>
+      <div class="container">${content}</div>
     `;
   }
 
-  static get tag() { return 'notifications-panel'; }
+  static get tag() {
+    return "notifications-panel";
+  }
 }

@@ -7,9 +7,9 @@ export const createConnection = (url) => {
     ws,
   };
 
-  ws.addEventListener('message', (message) => {
+  ws.addEventListener("message", (message) => {
     const data = JSON.parse(message.data);
-    if ('requestId' in data) {
+    if ("requestId" in data) {
       connection.requestQueue[data.requestId](data.result);
     }
   });
@@ -25,14 +25,16 @@ export const createConnection = (url) => {
   };
 
   return new Promise((resolve) => {
-    ws.addEventListener('open', () => resolve({
-      connection,
-      getWallets: getTemplate('get.wallets'),
-      getSettings: getTemplate('get.settings'),
+    ws.addEventListener("open", () =>
+      resolve({
+        connection,
+        getWallets: getTemplate("get.wallets"),
+        getSettings: getTemplate("get.settings"),
 
-      getHistories: getTemplate('get.histories'),
-      getTransactions: getTemplate('get.transactions'),
-      getUTXOs: getTemplate('get.utxos'),
-    }));
+        getHistories: getTemplate("get.histories"),
+        getTransactions: getTemplate("get.transactions"),
+        getUTXOs: getTemplate("get.utxos"),
+      }),
+    );
   });
 };

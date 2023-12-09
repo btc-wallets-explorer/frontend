@@ -1,3 +1,3 @@
 window.bwe = {
-  'backend-url': 'ws://localhost:8080',
+  "backend-url": "ws://localhost:8080",
 };

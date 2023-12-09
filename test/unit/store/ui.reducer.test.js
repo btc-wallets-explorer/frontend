@@ -1,18 +1,22 @@
-import { createNewStore } from '../../../src/model/store';
+import { createNewStore } from "../../../src/model/store";
 import {
   VIEWING_MODES,
-  addSelection, clearSelections, removeSelection, sendNotification, setViewingMode,
-} from '../../../src/model/ui.reducer';
+  addSelection,
+  clearSelections,
+  removeSelection,
+  sendNotification,
+  setViewingMode,
+} from "../../../src/model/ui.reducer";
 
-describe('ui reducer', () => {
+describe("ui reducer", () => {
   let store;
   beforeEach(() => {
     store = createNewStore();
   });
 
-  it('has empty initial values', () => {
+  it("has empty initial values", () => {
     expect(store.getState().ui).toEqual({
-      mode: 'overview',
+      mode: "overview",
       notifications: [],
       selections: [],
       forceStrength: {
@@ -25,8 +29,8 @@ describe('ui reducer', () => {
     });
   });
 
-  it('sends notification', () => {
-    const expected = { title: 'blubber', content: 'content' };
+  it("sends notification", () => {
+    const expected = { title: "blubber", content: "content" };
     store.dispatch(sendNotification(expected));
     store.dispatch(sendNotification(expected));
 
@@ -34,9 +38,9 @@ describe('ui reducer', () => {
     expect(actual.notifications).toEqual([expected, expected]);
   });
 
-  it('adds selections', () => {
-    const selection1 = { type: 'txo', id: 'test1' };
-    const selection2 = { type: 'txo', id: 'test2' };
+  it("adds selections", () => {
+    const selection1 = { type: "txo", id: "test1" };
+    const selection2 = { type: "txo", id: "test2" };
 
     store.dispatch(addSelection(selection1));
     store.dispatch(addSelection(selection2));
@@ -45,9 +49,9 @@ describe('ui reducer', () => {
     expect(actual.selections).toEqual([selection1, selection2]);
   });
 
-  it('removes a selection', () => {
-    const selection1 = { type: 'txo', id: 'test1' };
-    const selection2 = { type: 'txo', id: 'test2' };
+  it("removes a selection", () => {
+    const selection1 = { type: "txo", id: "test1" };
+    const selection2 = { type: "txo", id: "test2" };
     store.dispatch(addSelection(selection1));
     store.dispatch(addSelection(selection2));
 
@@ -57,9 +61,9 @@ describe('ui reducer', () => {
     expect(actual.selections).toEqual([selection2]);
   });
 
-  it('clears selections', () => {
-    const selection1 = { type: 'txo', id: 'test1' };
-    const selection2 = { type: 'txo', id: 'test2' };
+  it("clears selections", () => {
+    const selection1 = { type: "txo", id: "test1" };
+    const selection2 = { type: "txo", id: "test2" };
     store.dispatch(addSelection(selection1));
     store.dispatch(addSelection(selection2));
 
@@ -69,7 +73,7 @@ describe('ui reducer', () => {
     expect(actual.selections).toEqual([]);
   });
 
-  it('sets the viewing mode', () => {
+  it("sets the viewing mode", () => {
     store.dispatch(setViewingMode(VIEWING_MODES.DETAIL));
 
     expect(store.getState().ui.mode).toEqual(VIEWING_MODES.DETAIL);
