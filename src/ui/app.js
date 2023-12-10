@@ -31,8 +31,8 @@ export class App extends Base {
     });
 
     const fetchData = async () => {
-      const api = getState(ELEMENTS.BACKEND_CONNECTION);
-      // const api = await createApiMock(basicTestData);
+      // const api = getState(ELEMENTS.BACKEND_CONNECTION);
+      const api = await createApiMock(basicTestData);
 
       const settings = await api.getSettings();
       this.store.dispatch(setSettings(settings));

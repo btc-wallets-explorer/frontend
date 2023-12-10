@@ -1,8 +1,6 @@
 import { toScriptHash } from "../../utils/bitcoin";
 
-export const toOverviewModel = (network) => {
-  console.log(JSON.stringify(network, null, 2));
-
+export const toOverviewModel = (network, wallets) => {
   const getSpendVin = (txid, index, vout) => {
     const scriptHash =
       network.scriptHashes[toScriptHash(vout.scriptPubKey.address)];
@@ -36,19 +34,38 @@ export const toOverviewModel = (network) => {
     return walletForVout(tx.vout[vin.vout]);
   };
 
+  const valueForVin = (vin) => {
+    const tx = network.transactions[vin.txid];
+    if (!tx) return null;
+    return network.transactions[vin.txid].vout[vin.vout].value;
+  };
+
   const createWalletHistory = (wallet, transactions) => {
     const walletTransactions = transactions.filter(
       (t) =>
-        t.vin.some((vin) => vin.wallet === wallet) ||
-        t.vout.some((vout) => vout.wallet === wallet),
+        t.in.some((vin) => vin.wallet === wallet) ||
+        t.out.some((vout) => vout.wallet === wallet),
     );
 
     const calcUtxos = (prev, current) => {
-      if (prev.length === 0) return [];
+      const utxos = prev.length > 0 ? prev[prev.length - 1].utxos : [];
 
-      const utxos = prev[prev.length - 1].utxos;
+      const updatedUtxos = utxos.filter(
+        (utxo) =>
+          !current.in.some(
+            (vin) => vin.txid === utxo.txid && vin.vout === utxo.vout,
+          ),
+      );
 
-      return utxos;
+      const newUtxos = current.out
+        .filter((vout) => vout.wallet === wallet)
+        .map((vout) => ({
+          txid: current.txid,
+          value: vout.value,
+          vout: current.out.indexOf(vout),
+        }));
+
+      return [...updatedUtxos, ...newUtxos];
     };
 
     const history = walletTransactions
@@ -67,18 +84,29 @@ export const toOverviewModel = (network) => {
   const transactions = Object.values(network.transactions).map((t) => ({
     txid: t.txid,
     blockheight: t.time,
-    vin: t.vin.map((vin) => ({ ...vin, wallet: walletForVin(vin) })),
-    vout: t.vout.map((vout, index) => ({
+    in: t.vin.map((vin) => ({
+      ...vin,
+      value: valueForVin(vin),
+      wallet: walletForVin(vin),
+    })),
+    out: t.vout.map((vout, index) => ({
       ...vout,
       spendVin: getSpendVin(t.txid, index, vout),
       wallet: walletForVout(vout),
     })),
   }));
-  console.log(JSON.stringify(transactions, null, 2));
 
   const walletHistory = createWalletHistory("w1", Object.values(transactions));
-  const result = { wallet: "w1", history: walletHistory };
-  console.log(JSON.stringify(result, null, 2));
+
+  const result = wallets
+    .map((w) => w.name)
+    .map((walletName) => ({
+      wallet: walletName,
+      walletHistory: createWalletHistory(
+        walletName,
+        Object.values(transactions),
+      ),
+    }));
 
   return result;
 };
