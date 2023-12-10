@@ -2,46 +2,6 @@ import * as d3 from "d3";
 import * as d3Sankey from "d3-sankey";
 import { addSelection, removeSelection } from "../../../model/ui.reducer";
 import { createNetwork } from "../network-generation";
-import { toScriptHash } from "../../../utils/bitcoin";
-
-export const toOverviewModel = (network) => {
-  console.log(JSON.stringify(network, null, 2));
-  const walletForAddress = (address) => {
-    const scriptHash = toScriptHash(address);
-    const entry = network.scriptHashes[scriptHash];
-
-    return entry ? entry.info.wallet.name : null;
-  };
-
-  const walletForVin = (vin) => {
-    const tx = network.transactions[vin.txid];
-    if (!tx) {
-      return null;
-    }
-
-    return walletForAddress(tx.vout[vin.vout].scriptPubKey.address);
-  };
-
-  const transactions = Object.values(network.transactions)
-    .map((t) => ({
-      time: t.time,
-      input: t.vout.map((vout, index) => ({
-        txid: vout.txid,
-        vout: index,
-        wallet: walletForAddress(vout.scriptPubKey.address),
-      })),
-      output: t.vin.map((vin) => ({ ...vin, wallet: walletForVin(vin) })),
-    }))
-    .flatMap((t) => [
-      ...t.input.map((i) => ({ time: t.time, ...i })),
-      ...t.output.map((o) => ({ time: t.time, ...o })),
-    ])
-    .sort((a, b) => a.time < b.time);
-
-  console.log(JSON.stringify(transactions, null, 2));
-
-  return transactions;
-};
 
 export const d3OverviewGraph = (root, store, blockchain, settings) => {
   const query = (q) => root.shadowRoot.querySelector(q);
