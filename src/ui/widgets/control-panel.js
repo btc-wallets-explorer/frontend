@@ -4,6 +4,7 @@ import { observe } from "../../model/store";
 import {
   VIEWING_MODES,
   setForceStrength,
+  setScalarValues,
   setViewingMode,
 } from "../../model/ui.reducer";
 import { Base } from "../base";
@@ -22,6 +23,7 @@ export class ControlPanel extends Base {
   connectedCallback() {
     super.connectedCallback();
     this.forceStrength = this.store.getState().ui.forceStrength;
+    this.scalars = this.store.getState().ui.scalars;
 
     observe(this.store, "ui.mode", (mode) => {
       this.mode = mode;
@@ -29,7 +31,7 @@ export class ControlPanel extends Base {
   }
 
   show() {
-    const onChange = (event) =>
+    const onForceChange = (event) =>
       this.store.dispatch(
         setForceStrength({
           target: event.target.id,
@@ -42,13 +44,37 @@ export class ControlPanel extends Base {
         <div class="item">
           <label for=${force}>${force} force</label>
           <input
-            @input=${onChange}
+            @input=${onForceChange}
             type="range"
             min="1"
             max="100"
             value=${this.forceStrength[force]}
             class="slider"
             id=${force}
+          />
+        </div>
+      `,
+    );
+
+    const onScalarChange = (event) => {
+      this.store.dispatch(
+        setScalarValues({
+          [event.target.id]: event.target.value,
+        }),
+      );
+    };
+    const overviewControl = ["xAxis", "yAxis"].map(
+      (scalar) => html`
+        <div class="item">
+          <label for=${scalar}>${scalar} scalar</label>
+          <input
+            @input=${onScalarChange}
+            type="range"
+            min="0.001"
+            max="100"
+            value=${this.scalars[scalar]}
+            class="slider"
+            id=${scalar}
           />
         </div>
       `,
@@ -81,6 +107,13 @@ export class ControlPanel extends Base {
           })}"
         >
           ${forceControl}
+        </div>
+        <div
+          class="force-control ${classMap({
+            disabled: this.mode !== "overview",
+          })}"
+        >
+          ${overviewControl}
         </div>
       </div>
     `;

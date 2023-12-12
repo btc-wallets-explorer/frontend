@@ -41,11 +41,13 @@ export const toOverviewModel = (network, wallets) => {
   };
 
   const createWalletHistory = (wallet, transactions) => {
-    const walletTransactions = transactions.filter(
-      (t) =>
-        t.in.some((vin) => vin.wallet === wallet) ||
-        t.out.some((vout) => vout.wallet === wallet),
-    );
+    const walletTransactions = transactions
+      .filter(
+        (t) =>
+          t.in.some((vin) => vin.wallet === wallet) ||
+          t.out.some((vout) => vout.wallet === wallet),
+      )
+      .sort((a, b) => a.blockheight - b.blockheight);
 
     const calcUtxos = (prev, current) => {
       const utxos = prev.length > 0 ? prev[prev.length - 1].utxos : [];
@@ -68,15 +70,13 @@ export const toOverviewModel = (network, wallets) => {
       return [...updatedUtxos, ...newUtxos];
     };
 
-    const history = walletTransactions
-      .sort((a, b) => a.blockheight < b.blockheight)
-      .reduce(
-        (prev, current) => [
-          ...prev,
-          { ...current, utxos: calcUtxos(prev, current) },
-        ],
-        [],
-      );
+    const history = walletTransactions.reduce(
+      (prev, current) => [
+        ...prev,
+        { ...current, utxos: calcUtxos(prev, current) },
+      ],
+      [],
+    );
 
     return history;
   };
@@ -95,8 +95,6 @@ export const toOverviewModel = (network, wallets) => {
       wallet: walletForVout(vout),
     })),
   }));
-
-  const walletHistory = createWalletHistory("w1", Object.values(transactions));
 
   const result = wallets
     .map((w) => w.name)
