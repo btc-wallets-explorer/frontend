@@ -5,11 +5,12 @@ import _ from "lodash";
 const Y_OFFSET = 100;
 const X_OFFSET = 50;
 const VALUE_SCALAR = 50;
-const RECT_WIDTH = 2;
+const RECT_WIDTH = 5;
 const WIDTH = 2000;
 const HEIGHT = 1000;
+const STACKING_SIZE = 100;
 
-const MIN_VALUE = 0.0001 * VALUE_SCALAR;
+const MIN_VALUE = 0.001 * VALUE_SCALAR;
 
 const generateNodes = (model) => {
   const blockheights = model.flatMap((obj) =>
@@ -26,7 +27,7 @@ const generateNodes = (model) => {
       name: history.txid,
       blockheight: history.blockheight,
       x: timeScale(history.blockheight) + X_OFFSET,
-      y: index * 50 + Y_OFFSET,
+      y: index * STACKING_SIZE + Y_OFFSET,
       wallet: obj.wallet,
       value: history.utxos.reduce((prev, utxo) => prev + utxo.value, 0),
     })),
@@ -48,7 +49,7 @@ const generateNodes = (model) => {
 
 const generateLinks = (nodes, model) => {
   return model.flatMap((obj) => {
-    const stateLinks = obj.walletHistory
+    const intraWalletLinks = obj.walletHistory
       .slice(1)
       .flatMap((history, index) => {
         const source = nodes.find(
@@ -60,12 +61,35 @@ const generateLinks = (nodes, model) => {
         );
 
         return {
+          type: "intra-wallet",
           source,
           target,
+          value: source.value,
         };
       })
       .filter((l) => l.source.blockheight !== l.target.blockheight);
-    return [...stateLinks];
+
+    const interWalletLinks = obj.walletHistory.slice(1).flatMap((history) =>
+      history.out
+        .filter((vout) => vout.wallet && vout.wallet !== obj.wallet)
+        .map((vout) => {
+          const source = nodes.find(
+            (node) => node.id === `${obj.wallet}:${history.txid}`,
+          );
+          const target = nodes.find(
+            (node) => node.id === `${vout.wallet}:${history.txid}`,
+          );
+
+          return {
+            type: "inter-wallet",
+            source,
+            target,
+            value: vout.value,
+          };
+        }),
+    );
+
+    return [...interWalletLinks, ...intraWalletLinks];
   });
 };
 
@@ -105,7 +129,7 @@ const createGraph = (root, nodes, links) => {
     .attr("fill", (d) => "white");
 
   // Adds a title on the nodes.
-  rect.append("title").text((d) => `${d.name.slice(4)}\n${d.value}`);
+  rect.append("title").text((d) => `${new Date(d.blockheight * 1000)}`);
 
   // Creates the paths that represent the links.
   const link = svg
@@ -114,19 +138,19 @@ const createGraph = (root, nodes, links) => {
     .data(links)
     .join("line")
     .attr("x1", (d) => d.source.x + RECT_WIDTH)
-    .attr("y1", (d) => d.source.y + (d.source.value * VALUE_SCALAR) / 2)
+    .attr("y1", (d) => d.source.y + (d.value * VALUE_SCALAR) / 2)
     .attr("x2", (d) => d.target.x)
-    .attr("y2", (d) => d.target.y + (d.source.value * VALUE_SCALAR) / 2)
-    .attr("stroke", (d) => colorLinks(d.source.wallet))
-    .attr("stroke-opacity", 0.5)
-    .attr("stroke-width", (d) =>
-      Math.max(d.source.value * VALUE_SCALAR, MIN_VALUE),
-    );
+    .attr("y2", (d) => d.target.y + (d.value * VALUE_SCALAR) / 2)
+    .attr("stroke", (d) =>
+      colorLinks(d.type === "intra-wallet" ? d.source.wallet : d.target.wallet),
+    )
+    .attr("stroke-opacity", 0.7)
+    .attr("stroke-width", (d) => Math.max(d.value * VALUE_SCALAR, MIN_VALUE));
 
   link
     .append("title")
     .attr("fill", "white")
-    .text((d) => `${d.source.name.slice(0, 4)} → ${d.target.name.slice(0, 4)}`);
+    .text((d) => `${d.source.wallet} → ${d.target.wallet} - ${d.value}`);
 
   // Adds labels on the nodes.
   // svg
@@ -134,12 +158,12 @@ const createGraph = (root, nodes, links) => {
   //   .selectAll()
   //   .data(nodes)
   //   .join("text")
-  //   .attr("x", (d) => d.x + rectWidth / 2)
+  //   .attr("x", (d) => d.x + RECT_WIDTH / 2)
   //   .attr("y", (d) => d.y - 10)
   //   .attr("dy", "0.35em")
   //   .attr("text-anchor", "end")
   //   .attr("fill", "white")
-  //   .text((d) => d.name.slice(4));
+  //   .text((d) => d.name.slice(0, 4));
 
   console.log(nodes);
   console.log(links);
