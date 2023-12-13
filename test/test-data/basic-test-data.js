@@ -90,7 +90,7 @@ const transactions = [
       { txid: "tx1", vout: 2 },
     ],
 
-    vout: [{ value: 0.1, scriptPubKey: { address: addr("w2", 2) } }],
+    vout: [{ value: 0.2, scriptPubKey: { address: addr("w2", 2) } }],
     time: 350,
   },
   {
@@ -101,8 +101,8 @@ const transactions = [
     ],
 
     vout: [
-      { value: 0.1, scriptPubKey: { address: addr("w2", 3) } },
-      { value: 0.1, scriptPubKey: { address: otherAddr(1) } },
+      { value: 0.25, scriptPubKey: { address: addr("w2", 3) } },
+      { value: 0.05, scriptPubKey: { address: otherAddr(1) } },
     ],
     time: 430,
   },

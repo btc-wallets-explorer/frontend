@@ -5,6 +5,7 @@ import {
   clearSelections,
   removeSelection,
   sendNotification,
+  setScalarValues,
   setViewingMode,
 } from "../../../src/model/ui.reducer";
 
@@ -19,6 +20,10 @@ describe("ui reducer", () => {
       mode: "overview",
       notifications: [],
       selections: [],
+      scalars: {
+        xAxis: 1,
+        yAxis: 1,
+      },
       forceStrength: {
         charge: 0.1,
         link: 0.1,
@@ -77,5 +82,14 @@ describe("ui reducer", () => {
     store.dispatch(setViewingMode(VIEWING_MODES.DETAIL));
 
     expect(store.getState().ui.mode).toEqual(VIEWING_MODES.DETAIL);
+  });
+
+  it("sets the scaling values", () => {
+    store.dispatch(setScalarValues({ xAxis: 12 }));
+
+    expect(store.getState().ui.scalars).toEqual({ xAxis: 12, yAxis: 1 });
+
+    store.dispatch(setScalarValues({ yAxis: 12 }));
+    expect(store.getState().ui.scalars).toEqual({ xAxis: 12, yAxis: 12 });
   });
 });

@@ -1,59 +1,100 @@
 import * as d3 from "d3";
-import * as d3Sankey from "d3-sankey";
-import { addSelection, removeSelection } from "../../../model/ui.reducer";
-import { createNetwork } from "../network-generation";
-import { toScriptHash } from "../../../utils/bitcoin";
+import { toOverviewModel } from "../history-generation";
+import _ from "lodash";
 
-export const toOverviewModel = (network) => {
-  console.log(JSON.stringify(network, null, 2));
-  const walletForAddress = (address) => {
-    const scriptHash = toScriptHash(address);
-    const entry = network.scriptHashes[scriptHash];
+const Y_OFFSET = 100;
+const X_OFFSET = 50;
+const VALUE_SCALAR = 50;
+const RECT_WIDTH = 2;
+const WIDTH = 3000;
+const HEIGHT = 1000;
+const STACKING_SIZE = 100;
 
-    return entry ? entry.info.wallet.name : null;
-  };
+const MIN_VALUE = 0.001 * VALUE_SCALAR;
 
-  const walletForVin = (vin) => {
-    const tx = network.transactions[vin.txid];
-    if (!tx) {
-      return null;
-    }
+const generateNodes = (model) => {
+  const blockheights = model.flatMap((obj) =>
+    obj.walletHistory.map((history) => history.blockheight),
+  );
+  const timeScale = d3
+    .scaleLinear()
+    .domain([Math.min(...blockheights), Math.max(...blockheights)])
+    .range([0, WIDTH - Y_OFFSET * 2]);
 
-    return walletForAddress(tx.vout[vin.vout].scriptPubKey.address);
-  };
+  const walletNodes = model.flatMap((obj, index) =>
+    obj.walletHistory.map((history) => ({
+      id: `${obj.wallet}:${history.txid}`,
+      name: history.txid,
+      blockheight: history.blockheight,
+      x: timeScale(history.blockheight) + X_OFFSET,
+      y: index * STACKING_SIZE + Y_OFFSET,
+      wallet: obj.wallet,
+      value: history.utxos.reduce((prev, utxo) => prev + utxo.value, 0),
+    })),
+  );
 
-  const transactions = Object.values(network.transactions)
-    .map((t) => ({
-      time: t.time,
-      input: t.vout.map((vout, index) => ({
-        txid: vout.txid,
-        vout: index,
-        wallet: walletForAddress(vout.scriptPubKey.address),
-      })),
-      output: t.vin.map((vin) => ({ ...vin, wallet: walletForVin(vin) })),
-    }))
-    .flatMap((t) => [
-      ...t.input.map((i) => ({ time: t.time, ...i })),
-      ...t.output.map((o) => ({ time: t.time, ...o })),
-    ])
-    .sort((a, b) => a.time < b.time);
+  const otherNodes = [
+    {
+      id: "other",
+      name: "other",
+      x: 0,
+      y: 0,
+      wallet: "other",
+      value: 1,
+    },
+  ];
 
-  console.log(JSON.stringify(transactions, null, 2));
-
-  return transactions;
+  return [...walletNodes];
 };
 
-export const d3OverviewGraph = (root, store, blockchain, settings) => {
+const generateLinks = (nodes, model) => {
+  return model.flatMap((obj) => {
+    const intraWalletLinks = obj.walletHistory
+      .slice(1)
+      .flatMap((history, index) => {
+        const source = nodes.find(
+          (node) =>
+            node.id === `${obj.wallet}:${obj.walletHistory[index].txid}`,
+        );
+        const target = nodes.find(
+          (node) => node.id === `${obj.wallet}:${history.txid}`,
+        );
+
+        return {
+          type: "intra-wallet",
+          source,
+          target,
+          value: source.value,
+        };
+      })
+      .filter((l) => l.source.blockheight !== l.target.blockheight);
+
+    const interWalletLinks = obj.walletHistory.slice(1).flatMap((history) =>
+      history.out
+        .filter((vout) => vout.wallet && vout.wallet !== obj.wallet)
+        .map((vout) => {
+          const source = nodes.find(
+            (node) => node.id === `${obj.wallet}:${history.txid}`,
+          );
+          const target = nodes.find(
+            (node) => node.id === `${vout.wallet}:${history.txid}`,
+          );
+
+          return {
+            type: "inter-wallet",
+            source,
+            target,
+            value: vout.value,
+          };
+        }),
+    );
+
+    return [...interWalletLinks, ...intraWalletLinks];
+  });
+};
+
+const createGraph = (root, nodes, links) => {
   const query = (q) => root.shadowRoot.querySelector(q);
-
-  const model = toOverviewModel(blockchain);
-
-  const network = createNetwork(blockchain);
-
-  if (network.nodes.length === 0) {
-    return;
-  }
-  console.log(network);
 
   const margin = {
     top: 10,
@@ -65,12 +106,12 @@ export const d3OverviewGraph = (root, store, blockchain, settings) => {
   const colorNodes = d3.scaleOrdinal(d3.schemeCategory10);
   const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
 
-  // append the svg canvas to the page
+  // Create a SVG container.
   const svg = d3
     .select(query(".graph"))
     .append("svg")
-    .attr("width", "100%")
-    .attr("height", "100%")
+    .attr("width", WIDTH)
+    .attr("height", HEIGHT)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -78,68 +119,122 @@ export const d3OverviewGraph = (root, store, blockchain, settings) => {
   const zoomBehavior = d3.zoom().on("zoom", handleZoom);
   d3.select(query("svg")).call(zoomBehavior);
 
-  const data = network;
-  const sankey = d3Sankey
-    .sankey()
-    .size([1000, 1000])
-    .nodeId((d) => d.id)
-    .nodeWidth(20)
-    .nodePadding(10)
-    .nodeAlign(d3Sankey.sankeyCenter);
-  const graph = sankey(data);
-  const link = svg
+  // Creates the rects that represent the nodes.
+  const rect = svg
     .append("g")
-    .classed("links", true)
-    .selectAll("path")
-    .data(graph.links)
-    .enter()
-    .append("path")
-    .classed("link", true)
-    .attr("d", d3Sankey.sankeyLinkHorizontal())
-    .attr("fill", "none")
-    .attr("stroke", (d) => colorLinks(d.info.wallet.name))
-    .attr("stroke-width", (d) => d.width)
-    .attr("stoke-opacity", 0.5);
+    .attr("stroke", "#000")
+    .attr("stroke-width", 0)
+    .attr("fill", (d) => "white")
+    .selectAll()
+    .data(nodes)
+    .join("rect")
+    .attr("x", (d) => d.x)
+    .attr("y", (d) => d.y - 10)
+    .attr("height", (d) => d.value * VALUE_SCALAR + 10)
+    .attr("width", (d) => RECT_WIDTH);
 
-  const handleNodeClick = (event, node) => {
-    if (event.ctrlKey) {
-      window.open(settings["block-explorer-url"] + node.id.slice(4), "_blank");
-    } else {
-      const txIds = store
-        .getState()
-        .ui.selections.filter((s) => s.type === "transaction")
-        .map((s) => s.id);
+  // Adds a title on the nodes.
+  rect.append("title").text((d) => `${new Date(d.blockheight * 1000)}`);
 
-      const selection = { type: "transaction", id: node.tx.txid };
-      if (txIds.includes(node.tx.txid)) {
-        store.dispatch(removeSelection(selection));
-      } else {
-        store.dispatch(addSelection(selection));
-      }
-    }
+  // Creates the paths that represent the links.
+  const linkIntra = svg
+    .append("g")
+    .selectAll()
+    .data(links.filter((l) => l.type === "intra-wallet"))
+    .join("line")
+    .attr("x1", (d) => d.source.x + RECT_WIDTH)
+    .attr("y1", (d) => d.source.y + (d.value * VALUE_SCALAR) / 2)
+    .attr("x2", (d) => d.target.x)
+    .attr("y2", (d) => d.target.y + (d.value * VALUE_SCALAR) / 2)
+    .attr("stroke", (d) =>
+      colorLinks(d.type === "intra-wallet" ? d.source.wallet : d.target.wallet),
+    )
+    .attr("stroke-opacity", 0.7)
+    .attr("stroke-width", (d) => Math.max(d.value * VALUE_SCALAR, MIN_VALUE));
+
+  const createPathForInterWalletUTXO = (link) => {
+    const yOffset =
+      link.source.value * VALUE_SCALAR + (link.value * VALUE_SCALAR) / 2;
+
+    const startX = link.source.x;
+    const startY = link.source.y + yOffset;
+    const endX = link.target.x;
+    const endY = link.target.y;
+    const halfX = (startX + endX) / 2;
+    const halfY = (startY + endY) / 2;
+
+    const controlX = startX + 50;
+    const controlY = startY;
+
+    return `M ${startX}, ${startY} Q ${controlX} ${controlY} ${halfX} ${halfY} T ${endX} ${endY}`;
   };
 
-  const node = svg
+  const linkInter = svg
     .append("g")
-    .classed("nodes", true)
-    .selectAll("rect")
-    .data(graph.nodes)
-    .enter()
-    .append("rect")
-    .classed("node", true)
-    .attr("x", (d) => d.x0)
-    .attr("y", (d) => d.y0)
-    .attr("width", (d) => d.x1 - d.x0)
-    .attr("height", (d) => d.y1 - d.y0)
-    .style("fill", (d) => colorNodes(d.type))
-    .attr("opacity", 0.8)
-    .on("click", handleNodeClick);
+    .selectAll()
+    .data(links.filter((l) => l.type === "inter-wallet"))
+    .join("g");
 
-  node.append("title").text((d) => `${d.name}`);
+  const gradient = linkInter
+    .append("linearGradient")
+    .attr("id", (d) => `${d.source.name}${d.target.name}`)
+    .attr("gradientUnits", "userSpaceOnUse")
+    .attr("x1", (d) => d.source.x)
+    .attr("x2", (d) => d.target.x)
+    .attr("y1", (d) => d.source.y)
+    .attr("y2", (d) => d.target.y);
+  gradient
+    .append("stop")
+    .attr("offset", "0%")
+    .attr("stop-color", (d) => colorLinks(d.source.wallet));
+  gradient
+    .append("stop")
+    .attr("offset", "100%")
+    .attr("stop-color", (d) => colorLinks(d.target.wallet));
 
-  link
+  linkInter
+    .append("path")
+    .attr("d", createPathForInterWalletUTXO)
+    .attr("stroke", (d) =>
+      d.type === "inter-wallet"
+        ? `url(#${d.source.name}${d.target.name})`
+        : colorLinks(d.source.wallet),
+    )
+    .attr("stroke-opacity", 0.7)
+    .attr("stroke-width", (d) => Math.max(d.value * VALUE_SCALAR, MIN_VALUE))
+    .attr("fill", "transparent");
+
+  linkIntra
     .append("title")
-    .text(
-      (d) => `${d.info.wallet}  ${JSON.stringify(d.info, null, 1)}  ${d.value}`,
-    );
+    .attr("fill", "white")
+    .text((d) => `${d.source.wallet} → ${d.target.wallet} - ${d.value}`);
+
+  // Adds labels on the nodes.
+  // svg
+  //   .append("g")
+  //   .selectAll()
+  //   .data(nodes)
+  //   .join("text")
+  //   .attr("x", (d) => d.x + RECT_WIDTH / 2)
+  //   .attr("y", (d) => d.y - 10)
+  //   .attr("dy", "0.35em")
+  //   .attr("text-anchor", "end")
+  //   .attr("fill", "white")
+  //   .text((d) => d.name.slice(0, 4));
+
+  return svg.node();
+};
+
+export const d3OverviewGraph = (root, store, blockchain, settings, wallets) => {
+  const model = toOverviewModel(blockchain, wallets);
+  console.log(model);
+
+  const scalars = store.getState().ui.scalars;
+
+  const nodes = generateNodes(model, scalars);
+  console.log(nodes);
+  const links = generateLinks(nodes, model);
+  console.log(links);
+
+  createGraph(root, nodes, links, scalars);
 };

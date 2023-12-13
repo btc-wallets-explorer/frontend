@@ -9,6 +9,7 @@ export const VIEWING_MODES = Object.freeze({
 
 export const setViewingMode = createAction("ui/mode/set");
 
+export const setScalarValues = createAction("ui/scalars/set");
 export const setForceStrength = createAction("ui/force/set");
 
 export const sendNotification = createAction("ui/notification/send");
@@ -22,6 +23,10 @@ export const uiReducer = createReducer(
     mode: "overview",
     notifications: [],
     selections: [],
+    scalars: {
+      xAxis: 1,
+      yAxis: 1,
+    },
     forceStrength: {
       charge: 0.1,
       link: 0.1,
@@ -35,6 +40,13 @@ export const uiReducer = createReducer(
       .addCase(setViewingMode, (state, action) => ({
         ...state,
         mode: action.payload,
+      }))
+      .addCase(setScalarValues, (state, action) => ({
+        ...state,
+        scalars: {
+          ...state.scalars,
+          ...action.payload,
+        },
       }))
       .addCase(setForceStrength, (state, action) => ({
         ...state,

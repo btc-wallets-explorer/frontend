@@ -14,6 +14,7 @@ export class OverviewGraph extends Base {
         this.store,
         blockchain,
         this.store.getState().settings,
+        this.store.getState().wallets,
       );
     });
   }
