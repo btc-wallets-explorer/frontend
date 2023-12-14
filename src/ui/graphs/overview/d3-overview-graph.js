@@ -4,6 +4,7 @@ import {
   generateNodes,
   toOverviewModel,
 } from "./overview-network";
+import { times } from "lodash";
 
 const WIDHT = 4000;
 const HEIGHT = 3000;
@@ -21,17 +22,17 @@ const createGraph = (root, nodes, links) => {
   const scaleX = d3
     .scaleLinear()
     .domain([d3.min(blockheights), d3.max(blockheights)])
-    .range([0, 5000]);
+    .range([0, WIDHT]);
 
   const timeScale = d3.scaleTime(
     [
       new Date(d3.min(blockheights) * 1000),
       new Date(d3.max(blockheights) * 1000),
     ],
-    [0, 5000],
+    [0, WIDHT],
   );
 
-  const xAxis = d3.axisBottom(scaleX);
+  const xAxis = d3.axisBottom(timeScale);
 
   // Create a SVG container.
   const svg = d3
@@ -43,7 +44,11 @@ const createGraph = (root, nodes, links) => {
 
   const g = svg.append("g");
 
-  const gX = svg.append("g").attr("class", "axis axis--x").call(xAxis);
+  const gX = svg
+    .append("g")
+    .attr("class", "axis axis--x")
+    .attr("transform", "translate(0," + 50 + ")")
+    .call(xAxis);
 
   const zoom = d3
     .zoom()
@@ -57,13 +62,11 @@ const createGraph = (root, nodes, links) => {
   Object.assign(svg.call(zoom).node(), { reset });
 
   function zoomed({ transform }) {
-    console.log(transform);
     g.attr("transform", transform);
-    gX.call(xAxis.scale(transform.rescaleX(scaleX)));
+    gX.call(xAxis.scale(transform.rescaleX(timeScale)));
   }
 
   function reset() {
-    console.log("reset");
     svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
   }
 
