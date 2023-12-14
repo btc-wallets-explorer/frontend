@@ -227,14 +227,11 @@ const createGraph = (root, nodes, links) => {
 
 export const d3OverviewGraph = (root, store, blockchain, settings, wallets) => {
   const model = toOverviewModel(blockchain, wallets);
-  console.log(model);
-
   const scalars = store.getState().ui.scalars;
-
   const nodes = generateNodes(model, scalars);
-  console.log(nodes);
   const links = generateLinks(nodes, model);
-  console.log(links);
+
+  console.log(nodes, links);
 
   createGraph(root, nodes, links, scalars);
 };

@@ -57,6 +57,7 @@ export class App extends Base {
 
       <div class="page">
         <div class="graph-view">
+          <legend-panel class="legend"></legend-panel>
           <overview-graph
             style="display: ${isDetailMode ? "none" : "block"}"
           ></overview-graph>

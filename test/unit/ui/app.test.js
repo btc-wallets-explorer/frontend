@@ -33,7 +33,7 @@ describe("App Element", () => {
   it("renders components", async () => {
     expect(
       element.shadowRoot.querySelectorAll(".page > .graph-view > *").length,
-    ).toBe(2);
+    ).toBe(3);
   });
 
   it('renders detail mode if "ui.mode === detail"', async () => {

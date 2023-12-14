@@ -29,3 +29,11 @@
 .info {
   width: 50%;
 }
+
+.legend {
+  position: absolute;
+  width: auto;
+  border: solid;
+  padding: 0.5em;
+  border-color: white;
+}
