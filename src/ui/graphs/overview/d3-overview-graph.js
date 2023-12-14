@@ -1,97 +1,14 @@
 import * as d3 from "d3";
-import { toOverviewModel } from "../history-generation";
-import _ from "lodash";
+import {
+  generateLinks,
+  generateNodes,
+  toOverviewModel,
+} from "./overview-model";
 
-const Y_OFFSET = 100;
-const X_OFFSET = 50;
 const VALUE_SCALAR = 50;
 const RECT_WIDTH = 2;
-const WIDTH = 3000;
-const HEIGHT = 1000;
-const STACKING_SIZE = 100;
 
 const MIN_VALUE = 0.001 * VALUE_SCALAR;
-
-const generateNodes = (model) => {
-  const blockheights = model.flatMap((obj) =>
-    obj.walletHistory.map((history) => history.blockheight),
-  );
-  const timeScale = d3
-    .scaleLinear()
-    .domain([Math.min(...blockheights), Math.max(...blockheights)])
-    .range([0, WIDTH - Y_OFFSET * 2]);
-
-  const walletNodes = model.flatMap((obj, index) =>
-    obj.walletHistory.map((history) => ({
-      id: `${obj.wallet}:${history.txid}`,
-      name: history.txid,
-      blockheight: history.blockheight,
-      x: timeScale(history.blockheight) + X_OFFSET,
-      y: index * STACKING_SIZE + Y_OFFSET,
-      wallet: obj.wallet,
-      value: history.utxos.reduce((prev, utxo) => prev + utxo.value, 0),
-    })),
-  );
-
-  const otherNodes = [
-    {
-      id: "other",
-      name: "other",
-      x: 0,
-      y: 0,
-      wallet: "other",
-      value: 1,
-    },
-  ];
-
-  return [...walletNodes];
-};
-
-const generateLinks = (nodes, model) => {
-  return model.flatMap((obj) => {
-    const intraWalletLinks = obj.walletHistory
-      .slice(1)
-      .flatMap((history, index) => {
-        const source = nodes.find(
-          (node) =>
-            node.id === `${obj.wallet}:${obj.walletHistory[index].txid}`,
-        );
-        const target = nodes.find(
-          (node) => node.id === `${obj.wallet}:${history.txid}`,
-        );
-
-        return {
-          type: "intra-wallet",
-          source,
-          target,
-          value: source.value,
-        };
-      })
-      .filter((l) => l.source.blockheight !== l.target.blockheight);
-
-    const interWalletLinks = obj.walletHistory.slice(1).flatMap((history) =>
-      history.out
-        .filter((vout) => vout.wallet && vout.wallet !== obj.wallet)
-        .map((vout) => {
-          const source = nodes.find(
-            (node) => node.id === `${obj.wallet}:${history.txid}`,
-          );
-          const target = nodes.find(
-            (node) => node.id === `${vout.wallet}:${history.txid}`,
-          );
-
-          return {
-            type: "inter-wallet",
-            source,
-            target,
-            value: vout.value,
-          };
-        }),
-    );
-
-    return [...interWalletLinks, ...intraWalletLinks];
-  });
-};
 
 const createGraph = (root, nodes, links) => {
   const query = (q) => root.shadowRoot.querySelector(q);
@@ -103,19 +20,27 @@ const createGraph = (root, nodes, links) => {
     left: 10,
   };
 
-  const colorNodes = d3.scaleOrdinal(d3.schemeCategory10);
   const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
 
+  const timeScale = d3.scaleTime(
+    [new Date(2018, 0, 1), new Date(2023, 0, 2)],
+    [0, 960],
+  );
   // Create a SVG container.
   const svg = d3
     .select(query(".graph"))
     .append("svg")
-    .attr("width", WIDTH)
-    .attr("height", HEIGHT)
+    .attr("width", "100%")
+    .attr("height", "100%")
     .append("g")
-    .attr("transform", `translate(${margin.left},${margin.top})`);
+    .call(d3.axisBottom(timeScale));
 
-  const handleZoom = (e) => svg.attr("transform", e.transform);
+  svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const handleZoom = (e) => {
+    console.log(e);
+    svg.attr("transform", e.transform);
+  };
   const zoomBehavior = d3.zoom().on("zoom", handleZoom);
   d3.select(query("svg")).call(zoomBehavior);
 

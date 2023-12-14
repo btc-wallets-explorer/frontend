@@ -30,3 +30,27 @@ Another way is mocking the 'api' to provide the test data objects.
 ```
 const api = createApiMock(basicTestData);
 ```
+
+# Project structure
+
+## 'src/model`
+
+Redux model of application - global state
+
+## 'src/modules'
+
+Processing modules:
+
+- API.
+- Generation of the redux model.
+
+## 'src/ui'
+
+User Interface:
+
+- Graphs (overview, detailed)
+- Widgets
+
+## 'src/utils'
+
+Utility files

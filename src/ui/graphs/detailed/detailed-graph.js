@@ -2,7 +2,7 @@ import { html } from "lit";
 import { observe } from "../../../model/store";
 import { Base } from "../../base";
 import css from "./detailed-graph.css";
-import { d3ForceGraph } from "./force-graph";
+import { d3ForceGraph } from "./d3-detailed-graph";
 
 export class DetailedGraph extends Base {
   connectedCallback() {

@@ -3,9 +3,9 @@ import { html } from "lit";
 import { classMap } from "lit-html/directives/class-map.js";
 import { observe } from "../../model/store";
 import { Base } from "../base";
-import css from "./legend-panel.css";
+import css from "./legend.css";
 
-export class LegendPanel extends Base {
+export class Kegebd extends Base {
   static properties = {
     walletsNames: [],
   };
@@ -47,6 +47,6 @@ export class LegendPanel extends Base {
   }
 
   static get tag() {
-    return "legend-panel";
+    return "legend-widget";
   }
 }

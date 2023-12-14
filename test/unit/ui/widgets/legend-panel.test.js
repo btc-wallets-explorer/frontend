@@ -6,11 +6,10 @@ import {
 import { addWallets } from "../../../../src/model/wallets.reducer";
 import { ELEMENTS, injectState, resetState } from "../../../../src/state";
 import { registerWebComponents } from "../../../../src/ui";
-import { ControlPanel } from "../../../../src/ui/widgets/control-panel";
-import { LegendPanel } from "../../../../src/ui/widgets/legend-panel";
+import { Kegebd } from "../../../../src/ui/widgets/legend";
 import { TestUtils } from "../../../test-utils";
 
-describe("Legend Panel", () => {
+describe("Legend", () => {
   let store;
   let element;
 
@@ -23,7 +22,7 @@ describe("Legend Panel", () => {
     store = createNewStore();
     injectState(ELEMENTS.STORE, store);
 
-    element = await TestUtils.render(LegendPanel.tag);
+    element = await TestUtils.render(Kegebd.tag);
   });
 
   it("shows the legend", async () => {});

@@ -1,4 +1,7 @@
-import { toScriptHash } from "../../utils/bitcoin";
+import * as d3 from "d3";
+import { toScriptHash } from "../../../utils/bitcoin";
+
+const STACKING_SIZE = 200;
 
 export const toOverviewModel = (network, wallets) => {
   const getSpendVin = (txid, index, vout) => {
@@ -107,4 +110,75 @@ export const toOverviewModel = (network, wallets) => {
     }));
 
   return result;
+};
+
+export const generateNodes = (model) => {
+  const blockheights = model.flatMap((obj) =>
+    obj.walletHistory.map((history) => history.blockheight),
+  );
+
+  const timeScaleX = d3
+    .scaleLinear()
+    .domain([Math.min(...blockheights), Math.max(...blockheights)])
+    .range([0, 2000]);
+
+  const walletNodes = model.flatMap((obj, index) =>
+    obj.walletHistory.map((history) => ({
+      id: `${obj.wallet}:${history.txid}`,
+      name: history.txid,
+      blockheight: history.blockheight,
+      x: timeScaleX(history.blockheight),
+      y: index * STACKING_SIZE,
+      wallet: obj.wallet,
+      value: history.utxos.reduce((prev, utxo) => prev + utxo.value, 0),
+    })),
+  );
+
+  return [...walletNodes];
+};
+
+export const generateLinks = (nodes, model) => {
+  return model.flatMap((obj) => {
+    const intraWalletLinks = obj.walletHistory
+      .slice(1)
+      .flatMap((history, index) => {
+        const source = nodes.find(
+          (node) =>
+            node.id === `${obj.wallet}:${obj.walletHistory[index].txid}`,
+        );
+        const target = nodes.find(
+          (node) => node.id === `${obj.wallet}:${history.txid}`,
+        );
+
+        return {
+          type: "intra-wallet",
+          source,
+          target,
+          value: source.value,
+        };
+      })
+      .filter((l) => l.source.blockheight !== l.target.blockheight);
+
+    const interWalletLinks = obj.walletHistory.slice(1).flatMap((history) =>
+      history.out
+        .filter((vout) => vout.wallet && vout.wallet !== obj.wallet)
+        .map((vout) => {
+          const source = nodes.find(
+            (node) => node.id === `${obj.wallet}:${history.txid}`,
+          );
+          const target = nodes.find(
+            (node) => node.id === `${vout.wallet}:${history.txid}`,
+          );
+
+          return {
+            type: "inter-wallet",
+            source,
+            target,
+            value: vout.value,
+          };
+        }),
+    );
+
+    return [...interWalletLinks, ...intraWalletLinks];
+  });
 };

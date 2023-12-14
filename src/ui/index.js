@@ -2,7 +2,7 @@ import { App } from "./app";
 import { DetailedGraph } from "./graphs/detailed/detailed-graph";
 import { OverviewGraph } from "./graphs/overview/overview-graph";
 import { ControlPanel } from "./widgets/control-panel";
-import { LegendPanel } from "./widgets/legend-panel";
+import { Kegebd } from "./widgets/legend";
 import { Notifications } from "./widgets/notifications";
 import { SelectionInfo } from "./widgets/selection-info";
 
@@ -12,6 +12,6 @@ export const registerWebComponents = () => {
   window.customElements.define(SelectionInfo.tag, SelectionInfo);
   window.customElements.define(DetailedGraph.tag, DetailedGraph);
   window.customElements.define(OverviewGraph.tag, OverviewGraph);
-  window.customElements.define(LegendPanel.tag, LegendPanel);
+  window.customElements.define(Kegebd.tag, Kegebd);
   window.customElements.define(App.tag, App);
 };
