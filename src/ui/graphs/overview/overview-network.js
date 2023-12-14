@@ -1,4 +1,3 @@
-import * as d3 from "d3";
 import { toScriptHash } from "../../../utils/bitcoin";
 
 const STACKING_SIZE = 200;
@@ -117,17 +116,12 @@ export const generateNodes = (model) => {
     obj.walletHistory.map((history) => history.blockheight),
   );
 
-  const timeScaleX = d3
-    .scaleLinear()
-    .domain([Math.min(...blockheights), Math.max(...blockheights)])
-    .range([0, 2000]);
-
   const walletNodes = model.flatMap((obj, index) =>
     obj.walletHistory.map((history) => ({
       id: `${obj.wallet}:${history.txid}`,
       name: history.txid,
       blockheight: history.blockheight,
-      x: timeScaleX(history.blockheight),
+      x: history.blockheight,
       y: index * STACKING_SIZE,
       wallet: obj.wallet,
       value: history.utxos.reduce((prev, utxo) => prev + utxo.value, 0),

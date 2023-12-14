@@ -3,9 +3,11 @@ import {
   generateLinks,
   generateNodes,
   toOverviewModel,
-} from "./overview-model";
+} from "./overview-network";
 
-const VALUE_SCALAR = 50;
+const WIDHT = 4000;
+const HEIGHT = 3000;
+const VALUE_SCALAR = 100;
 const RECT_WIDTH = 2;
 
 const MIN_VALUE = 0.001 * VALUE_SCALAR;
@@ -13,39 +15,60 @@ const MIN_VALUE = 0.001 * VALUE_SCALAR;
 const createGraph = (root, nodes, links) => {
   const query = (q) => root.shadowRoot.querySelector(q);
 
-  const margin = {
-    top: 10,
-    right: 10,
-    bottom: 10,
-    left: 10,
-  };
-
   const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
 
+  const blockheights = nodes.map((n) => n.blockheight);
+  const scaleX = d3
+    .scaleLinear()
+    .domain([d3.min(blockheights), d3.max(blockheights)])
+    .range([0, 5000]);
+
   const timeScale = d3.scaleTime(
-    [new Date(2018, 0, 1), new Date(2023, 0, 2)],
-    [0, 960],
+    [
+      new Date(d3.min(blockheights) * 1000),
+      new Date(d3.max(blockheights) * 1000),
+    ],
+    [0, 5000],
   );
+
+  const xAxis = d3.axisBottom(scaleX);
+
   // Create a SVG container.
   const svg = d3
     .select(query(".graph"))
     .append("svg")
     .attr("width", "100%")
     .attr("height", "100%")
-    .append("g")
-    .call(d3.axisBottom(timeScale));
+    .attr("viewBox", [0, 0, WIDHT, HEIGHT]);
 
-  svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+  const g = svg.append("g");
 
-  const handleZoom = (e) => {
-    console.log(e);
-    svg.attr("transform", e.transform);
-  };
-  const zoomBehavior = d3.zoom().on("zoom", handleZoom);
-  d3.select(query("svg")).call(zoomBehavior);
+  const gX = svg.append("g").attr("class", "axis axis--x").call(xAxis);
+
+  const zoom = d3
+    .zoom()
+    .scaleExtent([1, 40])
+    .translateExtent([
+      [-100, -100],
+      [WIDHT + 90, HEIGHT + 100],
+    ])
+    .on("zoom", zoomed);
+
+  Object.assign(svg.call(zoom).node(), { reset });
+
+  function zoomed({ transform }) {
+    console.log(transform);
+    g.attr("transform", transform);
+    gX.call(xAxis.scale(transform.rescaleX(scaleX)));
+  }
+
+  function reset() {
+    console.log("reset");
+    svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+  }
 
   // Creates the rects that represent the nodes.
-  const rect = svg
+  const rect = g
     .append("g")
     .attr("stroke", "#000")
     .attr("stroke-width", 0)
@@ -53,7 +76,7 @@ const createGraph = (root, nodes, links) => {
     .selectAll()
     .data(nodes)
     .join("rect")
-    .attr("x", (d) => d.x)
+    .attr("x", (d) => scaleX(d.x))
     .attr("y", (d) => d.y - 10)
     .attr("height", (d) => d.value * VALUE_SCALAR + 10)
     .attr("width", (d) => RECT_WIDTH);
@@ -62,14 +85,14 @@ const createGraph = (root, nodes, links) => {
   rect.append("title").text((d) => `${new Date(d.blockheight * 1000)}`);
 
   // Creates the paths that represent the links.
-  const linkIntra = svg
+  const linkIntra = g
     .append("g")
     .selectAll()
     .data(links.filter((l) => l.type === "intra-wallet"))
     .join("line")
-    .attr("x1", (d) => d.source.x + RECT_WIDTH)
+    .attr("x1", (d) => scaleX(d.source.x) + RECT_WIDTH)
     .attr("y1", (d) => d.source.y + (d.value * VALUE_SCALAR) / 2)
-    .attr("x2", (d) => d.target.x)
+    .attr("x2", (d) => scaleX(d.target.x))
     .attr("y2", (d) => d.target.y + (d.value * VALUE_SCALAR) / 2)
     .attr("stroke", (d) =>
       colorLinks(d.type === "intra-wallet" ? d.source.wallet : d.target.wallet),
@@ -81,9 +104,9 @@ const createGraph = (root, nodes, links) => {
     const yOffset =
       link.source.value * VALUE_SCALAR + (link.value * VALUE_SCALAR) / 2;
 
-    const startX = link.source.x;
+    const startX = scaleX(link.source.x);
     const startY = link.source.y + yOffset;
-    const endX = link.target.x;
+    const endX = scaleX(link.target.x);
     const endY = link.target.y;
     const halfX = (startX + endX) / 2;
     const halfY = (startY + endY) / 2;
@@ -94,7 +117,7 @@ const createGraph = (root, nodes, links) => {
     return `M ${startX}, ${startY} Q ${controlX} ${controlY} ${halfX} ${halfY} T ${endX} ${endY}`;
   };
 
-  const linkInter = svg
+  const linkInter = g
     .append("g")
     .selectAll()
     .data(links.filter((l) => l.type === "inter-wallet"))
@@ -104,8 +127,8 @@ const createGraph = (root, nodes, links) => {
     .append("linearGradient")
     .attr("id", (d) => `${d.source.name}${d.target.name}`)
     .attr("gradientUnits", "userSpaceOnUse")
-    .attr("x1", (d) => d.source.x)
-    .attr("x2", (d) => d.target.x)
+    .attr("x1", (d) => scaleX(d.source.x))
+    .attr("x2", (d) => scaleX(d.target.x))
     .attr("y1", (d) => d.source.y)
     .attr("y2", (d) => d.target.y);
   gradient
@@ -135,7 +158,7 @@ const createGraph = (root, nodes, links) => {
     .text((d) => `${d.source.wallet} → ${d.target.wallet} - ${d.value}`);
 
   // Adds labels on the nodes.
-  // svg
+  //  view
   //   .append("g")
   //   .selectAll()
   //   .data(nodes)
@@ -146,8 +169,6 @@ const createGraph = (root, nodes, links) => {
   //   .attr("text-anchor", "end")
   //   .attr("fill", "white")
   //   .text((d) => d.name.slice(0, 4));
-
-  return svg.node();
 };
 
 export const d3OverviewGraph = (root, store, blockchain, settings, wallets) => {
