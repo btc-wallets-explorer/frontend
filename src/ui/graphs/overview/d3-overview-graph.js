@@ -4,6 +4,8 @@ import {
   generateNodes,
   toOverviewModel,
 } from "./overview-network";
+import { addSelection, removeSelection } from "../../../model/ui.reducer";
+import { observe } from "../../../model/store";
 
 const WIDHT = 4000;
 const HEIGHT = 3000;
@@ -12,8 +14,9 @@ const RECT_WIDTH = 2;
 
 const MIN_VALUE = 0.001 * VALUE_SCALAR;
 
-const createGraph = (root, nodes, links) => {
+const createGraph = (store, root, nodes, links) => {
   const query = (q) => root.shadowRoot.querySelector(q);
+  const queryAll = (q) => root.shadowRoot.querySelectorAll(q);
 
   const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -31,7 +34,7 @@ const createGraph = (root, nodes, links) => {
     [0, WIDHT],
   );
 
-  const xAxis = d3.axisBottom(timeScale);
+  const xAxis = d3.axisTop(timeScale);
 
   // Create a SVG container.
   const svg = d3
@@ -79,10 +82,31 @@ const createGraph = (root, nodes, links) => {
     .selectAll()
     .data(nodes)
     .join("rect")
+    .attr("class", "node_rect")
     .attr("x", (d) => xScale(d.x))
     .attr("y", (d) => d.y - 10)
     .attr("height", (d) => d.value * VALUE_SCALAR + 10)
-    .attr("width", (d) => RECT_WIDTH);
+    .attr("width", (d) => RECT_WIDTH)
+    .on("click", (event, d) => {
+      if (event.ctrlKey) {
+        window.open(
+          settings["block-explorer-url"] + node.id.slice(4),
+          "_blank",
+        );
+      } else {
+        const txIds = store
+          .getState()
+          .ui.selections.filter((s) => s.type === "transaction")
+          .map((s) => s.id);
+
+        const selection = { type: "transaction", id: d.name };
+        if (txIds.includes(d.name)) {
+          store.dispatch(removeSelection(selection));
+        } else {
+          store.dispatch(addSelection(selection));
+        }
+      }
+    });
 
   // Adds a title on the nodes.
   rect.append("title").text((d) => `${new Date(d.blockheight * 1000)}`);
@@ -172,6 +196,15 @@ const createGraph = (root, nodes, links) => {
   //   .attr("text-anchor", "end")
   //   .attr("fill", "white")
   //   .text((d) => d.name.slice(0, 4));
+
+  observe(store, "ui.selections", (data) => {
+    const txIds = data.filter((s) => s.type === "transaction").map((s) => s.id);
+
+    d3.selectAll(queryAll(".node_rect")).attr(
+      "class",
+      (d) => `node_rect ${txIds.includes(d.name) ? "selected" : ""}`,
+    );
+  });
 };
 
 export const d3OverviewGraph = (root, store, blockchain, settings, wallets) => {
@@ -182,5 +215,5 @@ export const d3OverviewGraph = (root, store, blockchain, settings, wallets) => {
 
   console.log(nodes, links);
 
-  createGraph(root, nodes, links, scalars);
+  createGraph(store, root, nodes, links, scalars);
 };
