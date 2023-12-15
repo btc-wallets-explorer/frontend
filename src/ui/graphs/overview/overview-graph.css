@@ -7,21 +7,9 @@
   outline: 3px solid yellow;
 }
 
-.vin.many {
-  stroke: yellow;
-  stroke-width: 2px;
-}
-
-.vout.many {
-  stroke: yellow;
-  stroke-width: 2px;
-}
-
-.vin {
-  stroke: white;
-  stroke-width: 0.5px;
-}
-.vout {
-  stroke: white;
-  stroke-width: 0.5px;
+.axis {
+  font-size: 3em;
+  stroke-width: 0.1em;
+  stroke-opacity: 0.5;
+  shape-rendering: crispEdges;
 }

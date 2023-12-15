@@ -32,6 +32,8 @@
 
 .legend {
   position: absolute;
+  bottom: 20;
+  right: 20;
   width: auto;
   border: solid;
   padding: 0.5em;

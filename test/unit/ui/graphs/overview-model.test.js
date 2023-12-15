@@ -1,6 +1,6 @@
 import { createNewStore } from "../../../../src/model/store";
 import { generateModel } from "../../../../src/modules/model-generation";
-import { toOverviewModel } from "../../../../src/ui/graphs/overview/overview-model";
+import { toOverviewModel } from "../../../../src/ui/graphs/overview/overview-network";
 import basicTestData from "../../../test-data/basic-test-data";
 import { createApiMock } from "../../../test-helpers";
 
