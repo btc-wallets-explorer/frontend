@@ -4,7 +4,6 @@ import {
   generateNodes,
   toOverviewModel,
 } from "./overview-network";
-import { times } from "lodash";
 
 const WIDHT = 4000;
 const HEIGHT = 3000;
@@ -19,7 +18,7 @@ const createGraph = (root, nodes, links) => {
   const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
 
   const blockheights = nodes.map((n) => n.blockheight);
-  const scaleX = d3
+  const xScale = d3
     .scaleLinear()
     .domain([d3.min(blockheights), d3.max(blockheights)])
     .range([0, WIDHT]);
@@ -40,6 +39,7 @@ const createGraph = (root, nodes, links) => {
     .append("svg")
     .attr("width", "100%")
     .attr("height", "100%")
+    .attr("preserveAspectRatio", "xMaxYMin slice")
     .attr("viewBox", [0, 0, WIDHT, HEIGHT]);
 
   const g = svg.append("g");
@@ -79,7 +79,7 @@ const createGraph = (root, nodes, links) => {
     .selectAll()
     .data(nodes)
     .join("rect")
-    .attr("x", (d) => scaleX(d.x))
+    .attr("x", (d) => xScale(d.x))
     .attr("y", (d) => d.y - 10)
     .attr("height", (d) => d.value * VALUE_SCALAR + 10)
     .attr("width", (d) => RECT_WIDTH);
@@ -93,9 +93,9 @@ const createGraph = (root, nodes, links) => {
     .selectAll()
     .data(links.filter((l) => l.type === "intra-wallet"))
     .join("line")
-    .attr("x1", (d) => scaleX(d.source.x) + RECT_WIDTH)
+    .attr("x1", (d) => xScale(d.source.x) + RECT_WIDTH)
     .attr("y1", (d) => d.source.y + (d.value * VALUE_SCALAR) / 2)
-    .attr("x2", (d) => scaleX(d.target.x))
+    .attr("x2", (d) => xScale(d.target.x))
     .attr("y2", (d) => d.target.y + (d.value * VALUE_SCALAR) / 2)
     .attr("stroke", (d) =>
       colorLinks(d.type === "intra-wallet" ? d.source.wallet : d.target.wallet),
@@ -107,9 +107,9 @@ const createGraph = (root, nodes, links) => {
     const yOffset =
       link.source.value * VALUE_SCALAR + (link.value * VALUE_SCALAR) / 2;
 
-    const startX = scaleX(link.source.x);
+    const startX = xScale(link.source.x);
     const startY = link.source.y + yOffset;
-    const endX = scaleX(link.target.x);
+    const endX = xScale(link.target.x);
     const endY = link.target.y;
     const halfX = (startX + endX) / 2;
     const halfY = (startY + endY) / 2;
@@ -130,8 +130,8 @@ const createGraph = (root, nodes, links) => {
     .append("linearGradient")
     .attr("id", (d) => `${d.source.name}${d.target.name}`)
     .attr("gradientUnits", "userSpaceOnUse")
-    .attr("x1", (d) => scaleX(d.source.x))
-    .attr("x2", (d) => scaleX(d.target.x))
+    .attr("x1", (d) => xScale(d.source.x))
+    .attr("x2", (d) => xScale(d.target.x))
     .attr("y1", (d) => d.source.y)
     .attr("y2", (d) => d.target.y);
   gradient
