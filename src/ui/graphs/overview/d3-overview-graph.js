@@ -1,17 +1,17 @@
 import * as d3 from "d3";
+import { uniqueId } from "lodash";
+import { observe } from "../../../model/store";
+import { addSelection, removeSelection } from "../../../model/ui.reducer";
 import {
   generateLinks,
   generateNodes,
   toOverviewModel,
 } from "./overview-network";
-import { addSelection, removeSelection } from "../../../model/ui.reducer";
-import { observe } from "../../../model/store";
-import { times, uniqueId } from "lodash";
 
 const WIDTH = 1000;
 const HEIGHT = 600;
 const VALUE_SCALAR = 30;
-const RECT_WIDTH = 2;
+const RECT_WIDTH = 1;
 
 const MIN_VALUE = 0.001 * VALUE_SCALAR;
 
@@ -54,8 +54,8 @@ const createGraph = (store, root, nodes, links) => {
     .zoom()
     .scaleExtent([1, 40])
     .translateExtent([
-      [-100, -100],
-      [WIDTH + 100, HEIGHT + 100],
+      [0, 0],
+      [WIDTH, HEIGHT],
     ])
     .on("zoom", zoomed);
 
@@ -82,8 +82,8 @@ const createGraph = (store, root, nodes, links) => {
     .attr("class", "node_rect")
     .attr("id", (d) => (d.selectId = "id" + uniqueId()))
     .attr("x", (d) => tX(d.time))
-    .attr("y", (d) => d.y - 10)
-    .attr("height", (d) => d.value * VALUE_SCALAR + 10)
+    .attr("y", (d) => d.y - 3)
+    .attr("height", (d) => d.value * VALUE_SCALAR + 3)
     .attr("width", (d) => RECT_WIDTH)
     .on("click", (event, d) => {
       if (event.ctrlKey) {
