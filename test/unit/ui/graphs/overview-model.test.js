@@ -18,7 +18,7 @@ describe("history generation", () => {
         walletHistory: [
           {
             txid: "tx1",
-            blockheight: 50,
+            time: 50,
             in: [
               {
                 txid: "xx1",
@@ -98,7 +98,7 @@ describe("history generation", () => {
           },
           {
             txid: "tx2",
-            blockheight: 300,
+            time: 300,
             in: [
               {
                 txid: "xx3",
@@ -147,7 +147,7 @@ describe("history generation", () => {
           },
           {
             txid: "tx3",
-            blockheight: 350,
+            time: 350,
             in: [
               {
                 txid: "tx1",
@@ -187,7 +187,7 @@ describe("history generation", () => {
         walletHistory: [
           {
             txid: "tx1",
-            blockheight: 50,
+            time: 50,
             in: [
               {
                 txid: "xx1",
@@ -262,7 +262,7 @@ describe("history generation", () => {
           },
           {
             txid: "tx2",
-            blockheight: 300,
+            time: 300,
             in: [
               {
                 txid: "xx3",
@@ -316,7 +316,7 @@ describe("history generation", () => {
           },
           {
             txid: "tx3",
-            blockheight: 350,
+            time: 350,
             in: [
               {
                 txid: "tx1",
@@ -362,7 +362,7 @@ describe("history generation", () => {
           },
           {
             txid: "tx4",
-            blockheight: 430,
+            time: 430,
             in: [
               {
                 txid: "tx2",

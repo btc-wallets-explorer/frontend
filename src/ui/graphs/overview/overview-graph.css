@@ -7,9 +7,23 @@
   outline: 3px solid yellow;
 }
 
+.highlighted {
+  outline: 10px solid purple;
+}
+
 .axis {
   font-size: 3em;
   stroke-width: 0.1em;
   stroke-opacity: 0.5;
   shape-rendering: crispEdges;
+}
+
+.timeline_line {
+  stroke: white;
+  stroke-width: 1px;
+}
+
+.timeline_date {
+  fill: white;
+  font-size: 2em;
 }
