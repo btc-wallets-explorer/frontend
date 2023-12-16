@@ -152,25 +152,30 @@ export const generateLinks = (nodes, model) => {
       })
       .filter((l) => l.source.time !== l.target.time);
 
-    const interWalletLinks = obj.walletHistory.slice(1).flatMap((history) =>
-      history.out
-        .filter((vout) => vout.wallet && vout.wallet !== obj.wallet)
-        .map((vout) => {
-          const source = nodes.find(
-            (node) => node.id === `${obj.wallet}:${history.txid}`,
-          );
-          const target = nodes.find(
-            (node) => node.id === `${vout.wallet}:${history.txid}`,
-          );
+    const interWalletLinks = obj.walletHistory.slice(1).flatMap((history) => {
+      const vouts = history.out.filter(
+        (vout) => vout.wallet && vout.wallet !== obj.wallet,
+      );
 
-          return {
-            type: "inter-wallet",
-            source,
-            target,
-            value: vout.value,
-          };
-        }),
-    );
+      return vouts.map((vout, index) => {
+        const source = nodes.find(
+          (node) => node.id === `${obj.wallet}:${history.txid}`,
+        );
+        const target = nodes.find(
+          (node) => node.id === `${vout.wallet}:${history.txid}`,
+        );
+
+        return {
+          type: "inter-wallet",
+          source,
+          target,
+          value: vout.value,
+          sourceOffset: vouts
+            .slice(index)
+            .reduce((prev, v) => v.value + prev, 0),
+        };
+      });
+    });
 
     return [...interWalletLinks, ...intraWalletLinks];
   });

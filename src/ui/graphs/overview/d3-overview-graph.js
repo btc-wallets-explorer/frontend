@@ -126,13 +126,15 @@ const createGraph = (store, root, nodes, links) => {
     .attr("stroke-width", (d) => Math.max(d.value * VALUE_SCALAR, MIN_VALUE));
 
   const createPathForInterWalletUTXO = (link) => {
-    const yOffset =
-      link.source.value * VALUE_SCALAR + (link.value * VALUE_SCALAR) / 2;
+    const startYOffset =
+      VALUE_SCALAR * (link.source.value + link.sourceOffset - link.value / 2);
+
+    const endYOffset = VALUE_SCALAR * (link.target.value - link.value / 2);
 
     const startX = tX(link.source.time);
-    const startY = link.source.y + yOffset;
+    const startY = link.source.y + startYOffset;
     const endX = tX(link.target.time);
-    const endY = link.target.y;
+    const endY = link.target.y + endYOffset;
     const halfX = (startX + endX) / 2;
     const halfY = (startY + endY) / 2;
 
