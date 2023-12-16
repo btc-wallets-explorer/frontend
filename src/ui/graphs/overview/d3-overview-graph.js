@@ -201,6 +201,11 @@ const createGraph = (store, root, nodes, links) => {
     .attr("x2", 100)
     .attr("y1", -100)
     .attr("y2", HEIGHT + 100);
+  g.append("text")
+    .attr("class", "timeline_date")
+    .attr("x", 100)
+    .attr("y", 100)
+    .text("");
 
   const highlighted = [];
   g.on("mousemove", (event) => {
@@ -223,6 +228,9 @@ const createGraph = (store, root, nodes, links) => {
     g.select(".timeline_line")
       .attr("x1", tX(node.time))
       .attr("x2", tX(node.time));
+    g.select(".timeline_date")
+      .text(new Date(node.time * 1000).toLocaleDateString())
+      .attr("x", tX(node.time));
 
     event.preventDefault();
   });
