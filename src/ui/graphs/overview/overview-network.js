@@ -1,6 +1,6 @@
 import { toScriptHash } from "../../../utils/bitcoin";
 
-const STACKING_SIZE = 200;
+const STACKING_SIZE = 50;
 
 export const toOverviewModel = (network, wallets) => {
   const getSpendVin = (txid, index, vout) => {

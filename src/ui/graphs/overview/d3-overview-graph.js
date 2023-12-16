@@ -1,17 +1,17 @@
 import * as d3 from "d3";
+import { uniqueId } from "lodash";
+import { observe } from "../../../model/store";
+import { addSelection, removeSelection } from "../../../model/ui.reducer";
 import {
   generateLinks,
   generateNodes,
   toOverviewModel,
 } from "./overview-network";
-import { addSelection, removeSelection } from "../../../model/ui.reducer";
-import { observe } from "../../../model/store";
-import { times, uniqueId } from "lodash";
 
-const WIDTH = 4000;
-const HEIGHT = 3000;
-const VALUE_SCALAR = 100;
-const RECT_WIDTH = 2;
+const WIDTH = 1000;
+const HEIGHT = 600;
+const VALUE_SCALAR = 30;
+const RECT_WIDTH = 1;
 
 const MIN_VALUE = 0.001 * VALUE_SCALAR;
 
@@ -47,15 +47,15 @@ const createGraph = (store, root, nodes, links) => {
   const gX = svg
     .append("g")
     .attr("class", "axis axis--x")
-    .attr("transform", "translate(0," + 50 + ")")
+    .attr("transform", "translate(0," + 20 + ")")
     .call(xAxis);
 
   const zoom = d3
     .zoom()
     .scaleExtent([1, 40])
     .translateExtent([
-      [-100, -100],
-      [WIDTH + 100, HEIGHT + 100],
+      [0, 0],
+      [WIDTH, HEIGHT],
     ])
     .on("zoom", zoomed);
 
@@ -73,7 +73,7 @@ const createGraph = (store, root, nodes, links) => {
   // Creates the rects that represent the nodes.
   const rect = g
     .append("g")
-    .attr("stroke", "#000")
+    .attr("stroke", "white")
     .attr("stroke-width", 0)
     .attr("fill", (d) => "white")
     .selectAll()
@@ -82,8 +82,8 @@ const createGraph = (store, root, nodes, links) => {
     .attr("class", "node_rect")
     .attr("id", (d) => (d.selectId = "id" + uniqueId()))
     .attr("x", (d) => tX(d.time))
-    .attr("y", (d) => d.y - 10)
-    .attr("height", (d) => d.value * VALUE_SCALAR + 10)
+    .attr("y", (d) => d.y - 3)
+    .attr("height", (d) => d.value * VALUE_SCALAR + 3)
     .attr("width", (d) => RECT_WIDTH)
     .on("click", (event, d) => {
       if (event.ctrlKey) {
@@ -197,14 +197,14 @@ const createGraph = (store, root, nodes, links) => {
 
   g.append("line")
     .attr("class", "timeline_line")
-    .attr("x1", 100)
-    .attr("x2", 100)
-    .attr("y1", -100)
+    .attr("x1", -100)
+    .attr("x2", -100)
+    .attr("y1", 20)
     .attr("y2", HEIGHT + 100);
   g.append("text")
     .attr("class", "timeline_date")
     .attr("x", 100)
-    .attr("y", 100)
+    .attr("y", 35)
     .text("");
 
   const highlighted = [];
