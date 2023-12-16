@@ -49,7 +49,7 @@ export const toOverviewModel = (network, wallets) => {
           t.in.some((vin) => vin.wallet === wallet) ||
           t.out.some((vout) => vout.wallet === wallet),
       )
-      .sort((a, b) => a.blockheight - b.blockheight);
+      .sort((a, b) => a.time - b.time);
 
     const calcUtxos = (prev, current) => {
       const utxos = prev.length > 0 ? prev[prev.length - 1].utxos : [];
@@ -85,7 +85,7 @@ export const toOverviewModel = (network, wallets) => {
 
   const transactions = Object.values(network.transactions).map((t) => ({
     txid: t.txid,
-    blockheight: t.time,
+    time: t.time,
     in: t.vin.map((vin) => ({
       ...vin,
       value: valueForVin(vin),
@@ -112,16 +112,15 @@ export const toOverviewModel = (network, wallets) => {
 };
 
 export const generateNodes = (model) => {
-  const blockheights = model.flatMap((obj) =>
-    obj.walletHistory.map((history) => history.blockheight),
+  const times = model.flatMap((obj) =>
+    obj.walletHistory.map((history) => history.time),
   );
 
   const walletNodes = model.flatMap((obj, index) =>
     obj.walletHistory.map((history) => ({
       id: `${obj.wallet}:${history.txid}`,
       name: history.txid,
-      blockheight: history.blockheight,
-      x: history.blockheight,
+      time: history.time,
       y: index * STACKING_SIZE,
       wallet: obj.wallet,
       value: history.utxos.reduce((prev, utxo) => prev + utxo.value, 0),
@@ -151,7 +150,7 @@ export const generateLinks = (nodes, model) => {
           value: source.value,
         };
       })
-      .filter((l) => l.source.blockheight !== l.target.blockheight);
+      .filter((l) => l.source.time !== l.target.time);
 
     const interWalletLinks = obj.walletHistory.slice(1).flatMap((history) =>
       history.out
