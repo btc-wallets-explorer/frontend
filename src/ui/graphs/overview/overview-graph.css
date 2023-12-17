@@ -4,16 +4,17 @@
 }
 
 .selected {
-  outline: 3px solid yellow;
+  outline-color: yellow;
+  outline-style: solid;
 }
 
 .highlighted {
-  outline: 3px solid purple;
+  outline-color: purple;
+  outline-style: solid;
 }
 
 .timeline_line {
   stroke: purple;
-  stroke-width: 1px;
 }
 
 .timeline_date {

@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { uniqueId } from "lodash";
+import { transform, uniqueId } from "lodash";
 import { observe } from "../../../model/store";
 import { addSelection, removeSelection } from "../../../model/ui.reducer";
 import {
@@ -11,13 +11,15 @@ import {
 const WIDTH = 1000;
 const HEIGHT = 600;
 const VALUE_SCALAR = 30;
-const RECT_WIDTH = 1;
+const RECT_WIDTH = 2;
 
 const MIN_VALUE = 0.001 * VALUE_SCALAR;
 
 const createGraph = (store, root, nodes, links) => {
   const query = (q) => root.shadowRoot.querySelector(q);
   const queryAll = (q) => root.shadowRoot.querySelectorAll(q);
+
+  const identityTrasnform = { k: 1, x: 0, y: 0 };
 
   const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -52,7 +54,7 @@ const createGraph = (store, root, nodes, links) => {
 
   const zoom = d3
     .zoom()
-    .scaleExtent([1, 40])
+    .scaleExtent([1, 100])
     .translateExtent([
       [0, 0],
       [WIDTH, HEIGHT],
@@ -61,153 +63,162 @@ const createGraph = (store, root, nodes, links) => {
 
   Object.assign(svg.call(zoom).node(), { reset });
 
-  function zoomed({ transform }) {
+  const createNodes = (transform) => {
+    const scale = 1.0 / transform.k;
+    // Creates the rects that represent the nodes.
+    const rect = g
+      .append("g")
+      .attr("stroke", "white")
+      .attr("stroke-width", 0)
+      .attr("fill", (d) => "white")
+      .selectAll()
+      .data(nodes)
+      .join("rect")
+      .attr("class", "node_rect")
+      .attr("id", (d) => (d.selectId = "id" + uniqueId()))
+      .attr("x", (d) => tX(d.time))
+      .attr("y", (d) => d.y - 3)
+      .attr("height", (d) => d.value * VALUE_SCALAR + 3)
+      .attr("width", (d) => RECT_WIDTH * scale)
+      .on("click", (event, d) => {
+        if (event.ctrlKey) {
+          window.open(
+            settings["block-explorer-url"] + node.id.slice(4),
+            "_blank",
+          );
+        } else {
+          const txIds = store
+            .getState()
+            .ui.selections.filter((s) => s.type === "transaction")
+            .map((s) => s.id);
+
+          const selection = { type: "transaction", id: d.name };
+          if (txIds.includes(d.name)) {
+            store.dispatch(removeSelection(selection));
+          } else {
+            store.dispatch(addSelection(selection));
+          }
+        }
+      });
+
+    rect.append("title").text((d) => `${new Date(d.time * 1000)}`);
+  };
+
+  const createLinks = (transform) => {
+    const scale = 1.0 / transform.k;
+    const linkIntra = g
+      .append("g")
+      .selectAll()
+      .data(links.filter((l) => l.type === "intra-wallet"))
+      .join("line")
+      .attr("x1", (d) => tX(d.source.time) + RECT_WIDTH * scale)
+      .attr("y1", (d) => d.source.y + (d.value * VALUE_SCALAR) / 2)
+      .attr("x2", (d) => tX(d.target.time))
+      .attr("y2", (d) => d.target.y + (d.value * VALUE_SCALAR) / 2)
+      .attr("stroke", (d) =>
+        colorLinks(
+          d.type === "intra-wallet" ? d.source.wallet : d.target.wallet,
+        ),
+      )
+      .attr("stroke-opacity", 0.7)
+      .attr("stroke-width", (d) => Math.max(d.value * VALUE_SCALAR, MIN_VALUE));
+
+    const getSourceOffset = (link) =>
+      VALUE_SCALAR * (link.source.value + link.sourceOffset - link.value / 2);
+    const getTargetOffset = (link) =>
+      VALUE_SCALAR * (link.target.value - link.value / 2);
+
+    const createPathForInterWalletUTXO = (link) => {
+      const startYOffset = getSourceOffset(link);
+      const endYOffset = getTargetOffset(link);
+
+      const startX = tX(link.source.time);
+      const startY = link.source.y + startYOffset;
+      const endX = tX(link.target.time);
+      const endY = link.target.y + endYOffset;
+      const halfX = (startX + endX) / 2;
+      const halfY = (startY + endY) / 2;
+
+      const controlX = startX + 50;
+      const controlY = startY;
+
+      return `M ${startX}, ${startY} Q ${controlX} ${controlY} ${halfX} ${halfY} T ${endX} ${endY}`;
+    };
+
+    const linkInter = g
+      .append("g")
+      .selectAll()
+      .data(links.filter((l) => l.type === "inter-wallet"))
+      .join("g");
+
+    const gradient = linkInter
+      .append("linearGradient")
+      .attr("id", (d) => `${d.source.name}${d.target.name}`)
+      .attr("gradientUnits", "userSpaceOnUse")
+      .attr("x1", (d) => tX(d.source.time))
+      .attr("x2", (d) => tX(d.target.time))
+      .attr("y1", (d) => d.source.y + getSourceOffset(d))
+      .attr("y2", (d) => d.target.y + getTargetOffset(d));
+    gradient
+      .append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", (d) => colorLinks(d.source.wallet));
+    gradient
+      .append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", (d) => colorLinks(d.target.wallet));
+
+    linkInter
+      .append("path")
+      .attr("d", createPathForInterWalletUTXO)
+      .attr("stroke", (d) =>
+        d.type === "inter-wallet"
+          ? `url(#${d.source.name}${d.target.name})`
+          : colorLinks(d.source.wallet),
+      )
+      .attr("stroke-opacity", 0.7)
+      .attr("stroke-width", (d) => Math.max(d.value * VALUE_SCALAR, MIN_VALUE))
+      .attr("fill", "transparent");
+
+    linkIntra
+      .append("title")
+      .attr("fill", "white")
+      .text((d) => `${d.source.wallet} → ${d.target.wallet} - ${d.value}`);
+  };
+
+  const createTimeline = (transform) => {
+    const scale = 1.0 / transform.k;
+    g.append("line")
+      .attr("class", "timeline_line")
+      .attr("stroke-width", scale)
+      .attr("y1", (20 - transform.y) * scale)
+      .attr("y2", (HEIGHT - transform.y) * scale);
+    g.append("text")
+      .attr("class", "timeline_date")
+      .attr("font-size", 10 * scale)
+      .attr("x", (100 - transform.x) * scale)
+      .attr("y", (35 - transform.y) * scale)
+      .text("");
+  };
+
+  createNodes(identityTrasnform);
+  createLinks(identityTrasnform);
+  createTimeline(identityTrasnform);
+
+  function zoomed(event) {
+    const { transform } = event;
     g.attr("transform", transform);
     gX.call(xAxis.scale(transform.rescaleX(timeScale)));
+
+    g.selectAll("*").remove();
+    createNodes(transform);
+    createLinks(transform);
+    createTimeline(transform);
   }
 
   function reset() {
     svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
   }
-
-  // Creates the rects that represent the nodes.
-  const rect = g
-    .append("g")
-    .attr("stroke", "white")
-    .attr("stroke-width", 0)
-    .attr("fill", (d) => "white")
-    .selectAll()
-    .data(nodes)
-    .join("rect")
-    .attr("class", "node_rect")
-    .attr("id", (d) => (d.selectId = "id" + uniqueId()))
-    .attr("x", (d) => tX(d.time))
-    .attr("y", (d) => d.y - 3)
-    .attr("height", (d) => d.value * VALUE_SCALAR + 3)
-    .attr("width", (d) => RECT_WIDTH)
-    .on("click", (event, d) => {
-      if (event.ctrlKey) {
-        window.open(
-          settings["block-explorer-url"] + node.id.slice(4),
-          "_blank",
-        );
-      } else {
-        const txIds = store
-          .getState()
-          .ui.selections.filter((s) => s.type === "transaction")
-          .map((s) => s.id);
-
-        const selection = { type: "transaction", id: d.name };
-        if (txIds.includes(d.name)) {
-          store.dispatch(removeSelection(selection));
-        } else {
-          store.dispatch(addSelection(selection));
-        }
-      }
-    });
-
-  // Adds a title on the nodes.
-  rect.append("title").text((d) => `${new Date(d.time * 1000)}`);
-
-  // Creates the paths that represent the links.
-  const linkIntra = g
-    .append("g")
-    .selectAll()
-    .data(links.filter((l) => l.type === "intra-wallet"))
-    .join("line")
-    .attr("x1", (d) => tX(d.source.time) + RECT_WIDTH)
-    .attr("y1", (d) => d.source.y + (d.value * VALUE_SCALAR) / 2)
-    .attr("x2", (d) => tX(d.target.time))
-    .attr("y2", (d) => d.target.y + (d.value * VALUE_SCALAR) / 2)
-    .attr("stroke", (d) =>
-      colorLinks(d.type === "intra-wallet" ? d.source.wallet : d.target.wallet),
-    )
-    .attr("stroke-opacity", 0.7)
-    .attr("stroke-width", (d) => Math.max(d.value * VALUE_SCALAR, MIN_VALUE));
-
-  const createPathForInterWalletUTXO = (link) => {
-    const startYOffset =
-      VALUE_SCALAR * (link.source.value + link.sourceOffset - link.value / 2);
-
-    const endYOffset = VALUE_SCALAR * (link.target.value - link.value / 2);
-
-    const startX = tX(link.source.time);
-    const startY = link.source.y + startYOffset;
-    const endX = tX(link.target.time);
-    const endY = link.target.y + endYOffset;
-    const halfX = (startX + endX) / 2;
-    const halfY = (startY + endY) / 2;
-
-    const controlX = startX + 50;
-    const controlY = startY;
-
-    return `M ${startX}, ${startY} Q ${controlX} ${controlY} ${halfX} ${halfY} T ${endX} ${endY}`;
-  };
-
-  const linkInter = g
-    .append("g")
-    .selectAll()
-    .data(links.filter((l) => l.type === "inter-wallet"))
-    .join("g");
-
-  const gradient = linkInter
-    .append("linearGradient")
-    .attr("id", (d) => `${d.source.name}${d.target.name}`)
-    .attr("gradientUnits", "userSpaceOnUse")
-    .attr("x1", (d) => tX(d.source.time))
-    .attr("x2", (d) => tX(d.target.time))
-    .attr("y1", (d) => d.source.y)
-    .attr("y2", (d) => d.target.y);
-  gradient
-    .append("stop")
-    .attr("offset", "0%")
-    .attr("stop-color", (d) => colorLinks(d.source.wallet));
-  gradient
-    .append("stop")
-    .attr("offset", "100%")
-    .attr("stop-color", (d) => colorLinks(d.target.wallet));
-
-  linkInter
-    .append("path")
-    .attr("d", createPathForInterWalletUTXO)
-    .attr("stroke", (d) =>
-      d.type === "inter-wallet"
-        ? `url(#${d.source.name}${d.target.name})`
-        : colorLinks(d.source.wallet),
-    )
-    .attr("stroke-opacity", 0.7)
-    .attr("stroke-width", (d) => Math.max(d.value * VALUE_SCALAR, MIN_VALUE))
-    .attr("fill", "transparent");
-
-  linkIntra
-    .append("title")
-    .attr("fill", "white")
-    .text((d) => `${d.source.wallet} → ${d.target.wallet} - ${d.value}`);
-
-  // Adds labels on the nodes.
-  //  view
-  //   .append("g")
-  //   .selectAll()
-  //   .data(nodes)
-  //   .join("text")
-  //   .attr("x", (d) => d.x + RECT_WIDTH / 2)
-  //   .attr("y", (d) => d.y - 10)
-  //   .attr("dy", "0.35em")
-  //   .attr("text-anchor", "end")
-  //   .attr("fill", "white")
-  //   .text((d) => d.name.slice(0, 4));
-
-  g.append("line")
-    .attr("class", "timeline_line")
-    .attr("x1", -100)
-    .attr("x2", -100)
-    .attr("y1", 20)
-    .attr("y2", HEIGHT + 100);
-  g.append("text")
-    .attr("class", "timeline_date")
-    .attr("x", 100)
-    .attr("y", 35)
-    .text("");
 
   const highlighted = [];
   g.on("mousemove", (event) => {
