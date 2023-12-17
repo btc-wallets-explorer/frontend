@@ -63,7 +63,7 @@ export class ControlPanel extends Base {
         }),
       );
     };
-    const overviewControl = ["xAxis", "yAxis"].map(
+    const overviewControl = ["xAxis", "yAxis", "value"].map(
       (scalar) => html`
         <div class="item">
           <label for=${scalar}>${scalar} scalar</label>

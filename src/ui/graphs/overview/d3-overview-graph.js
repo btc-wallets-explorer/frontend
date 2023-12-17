@@ -10,16 +10,20 @@ import {
 
 const WIDTH = 1000;
 const HEIGHT = 600;
-const VALUE_SCALAR = 30;
 const RECT_WIDTH = 2;
 
-const MIN_VALUE = 0.001 * VALUE_SCALAR;
-
-const createGraph = (store, root, nodes, links) => {
+const createGraph = (store, root, nodes, links, settings) => {
   const query = (q) => root.shadowRoot.querySelector(q);
   const queryAll = (q) => root.shadowRoot.querySelectorAll(q);
 
-  const identityTrasnform = { k: 1, x: 0, y: 0 };
+  const state = store.getState();
+  const uiSettings = {
+    transform: { k: 1, x: 0, y: 0 },
+    yAxisScale: state.ui.scalars.yAxis,
+    valueScalar: 30,
+    minValue: 0.001 * 30,
+    stackSize: 50,
+  };
 
   const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -31,7 +35,11 @@ const createGraph = (store, root, nodes, links) => {
     .range([0, WIDTH])
     .clamp(true);
 
+  const wallets = Array.from(new Set(nodes.map((n) => n.wallet)));
+
   const tX = (time) => timeScale(new Date(time * 1000));
+  const tY = (wallet) =>
+    wallets.indexOf(wallet) * uiSettings.stackSize * uiSettings.yAxisScale;
 
   const xAxis = d3.axisTop(timeScale);
 
@@ -63,9 +71,10 @@ const createGraph = (store, root, nodes, links) => {
 
   Object.assign(svg.call(zoom).node(), { reset });
 
-  const createNodes = (transform) => {
+  const createNodes = (uiSettings) => {
+    const transform = uiSettings.transform;
     const scale = 1.0 / transform.k;
-    // Creates the rects that represent the nodes.
+
     const rect = g
       .append("g")
       .attr("stroke", "white")
@@ -77,8 +86,8 @@ const createGraph = (store, root, nodes, links) => {
       .attr("class", "node_rect")
       .attr("id", (d) => (d.selectId = "id" + uniqueId()))
       .attr("x", (d) => tX(d.time))
-      .attr("y", (d) => d.y - 3)
-      .attr("height", (d) => d.value * VALUE_SCALAR + 3)
+      .attr("y", (d) => tY(d.wallet) - 3)
+      .attr("height", (d) => d.value * uiSettings.valueScalar + 3)
       .attr("width", (d) => RECT_WIDTH * scale)
       .on("click", (event, d) => {
         if (event.ctrlKey) {
@@ -104,7 +113,8 @@ const createGraph = (store, root, nodes, links) => {
     rect.append("title").text((d) => `${new Date(d.time * 1000)}`);
   };
 
-  const createLinks = (transform) => {
+  const createLinks = (uiSettings) => {
+    const transform = uiSettings.transform;
     const scale = 1.0 / transform.k;
     const linkIntra = g
       .append("g")
@@ -112,30 +122,39 @@ const createGraph = (store, root, nodes, links) => {
       .data(links.filter((l) => l.type === "intra-wallet"))
       .join("line")
       .attr("x1", (d) => tX(d.source.time) + RECT_WIDTH * scale)
-      .attr("y1", (d) => d.source.y + (d.value * VALUE_SCALAR) / 2)
+      .attr(
+        "y1",
+        (d) => tY(d.source.wallet) + (d.value * uiSettings.valueScalar) / 2,
+      )
       .attr("x2", (d) => tX(d.target.time))
-      .attr("y2", (d) => d.target.y + (d.value * VALUE_SCALAR) / 2)
+      .attr(
+        "y2",
+        (d) => tY(d.target.wallet) + (d.value * uiSettings.valueScalar) / 2,
+      )
       .attr("stroke", (d) =>
         colorLinks(
           d.type === "intra-wallet" ? d.source.wallet : d.target.wallet,
         ),
       )
       .attr("stroke-opacity", 0.7)
-      .attr("stroke-width", (d) => Math.max(d.value * VALUE_SCALAR, MIN_VALUE));
+      .attr("stroke-width", (d) =>
+        Math.max(d.value * uiSettings.valueScalar, uiSettings.minValue),
+      );
 
     const getSourceOffset = (link) =>
-      VALUE_SCALAR * (link.source.value + link.sourceOffset - link.value / 2);
+      uiSettings.valueScalar *
+      (link.source.value + link.sourceOffset - link.value / 2);
     const getTargetOffset = (link) =>
-      VALUE_SCALAR * (link.target.value - link.value / 2);
+      uiSettings.valueScalar * (link.target.value - link.value / 2);
 
     const createPathForInterWalletUTXO = (link) => {
       const startYOffset = getSourceOffset(link);
       const endYOffset = getTargetOffset(link);
 
       const startX = tX(link.source.time);
-      const startY = link.source.y + startYOffset;
+      const startY = tY(link.source.wallet) + startYOffset;
       const endX = tX(link.target.time);
-      const endY = link.target.y + endYOffset;
+      const endY = tY(link.target.wallet) + endYOffset;
       const halfX = (startX + endX) / 2;
       const halfY = (startY + endY) / 2;
 
@@ -157,8 +176,8 @@ const createGraph = (store, root, nodes, links) => {
       .attr("gradientUnits", "userSpaceOnUse")
       .attr("x1", (d) => tX(d.source.time))
       .attr("x2", (d) => tX(d.target.time))
-      .attr("y1", (d) => d.source.y + getSourceOffset(d))
-      .attr("y2", (d) => d.target.y + getTargetOffset(d));
+      .attr("y1", (d) => tY(d.source.wallet) + getSourceOffset(d))
+      .attr("y2", (d) => tY(d.target.wallet) + getTargetOffset(d));
     gradient
       .append("stop")
       .attr("offset", "0%")
@@ -177,7 +196,9 @@ const createGraph = (store, root, nodes, links) => {
           : colorLinks(d.source.wallet),
       )
       .attr("stroke-opacity", 0.7)
-      .attr("stroke-width", (d) => Math.max(d.value * VALUE_SCALAR, MIN_VALUE))
+      .attr("stroke-width", (d) =>
+        Math.max(d.value * uiSettings.valueScalar, uiSettings.minValue),
+      )
       .attr("fill", "transparent");
 
     linkIntra
@@ -186,7 +207,8 @@ const createGraph = (store, root, nodes, links) => {
       .text((d) => `${d.source.wallet} → ${d.target.wallet} - ${d.value}`);
   };
 
-  const createTimeline = (transform) => {
+  const createTimeline = (uiSettings) => {
+    const transform = uiSettings.transform;
     const scale = 1.0 / transform.k;
     g.append("line")
       .attr("class", "timeline_line")
@@ -201,19 +223,23 @@ const createGraph = (store, root, nodes, links) => {
       .text("");
   };
 
-  createNodes(identityTrasnform);
-  createLinks(identityTrasnform);
-  createTimeline(identityTrasnform);
+  const update = () => {
+    g.selectAll("*").remove();
+
+    createNodes(uiSettings);
+    createLinks(uiSettings);
+    createTimeline(uiSettings);
+  };
+
+  update();
 
   function zoomed(event) {
     const { transform } = event;
     g.attr("transform", transform);
     gX.call(xAxis.scale(transform.rescaleX(timeScale)));
 
-    g.selectAll("*").remove();
-    createNodes(transform);
-    createLinks(transform);
-    createTimeline(transform);
+    uiSettings.transform = transform;
+    update();
   }
 
   function reset() {
@@ -256,6 +282,12 @@ const createGraph = (store, root, nodes, links) => {
       (d) => `node_rect ${txIds.includes(d.name) ? "selected" : ""}`,
     );
   });
+
+  observe(store, "ui.scalars", (scalars) => {
+    uiSettings.yAxisScale = scalars.yAxis;
+    uiSettings.valueScalar = scalars.value;
+    update(uiSettings);
+  });
 };
 
 export const d3OverviewGraph = (root, store, blockchain, settings, wallets) => {
@@ -266,5 +298,5 @@ export const d3OverviewGraph = (root, store, blockchain, settings, wallets) => {
 
   console.log(nodes, links);
 
-  createGraph(store, root, nodes, links, scalars);
+  createGraph(store, root, nodes, links, scalars, settings);
 };
