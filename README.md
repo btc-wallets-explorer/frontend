@@ -16,9 +16,18 @@ Redux base model:
     blockchain: {
         transactions: [],
         utxos: [],
+        scriptHashes: []
     }
 }
 ```
+
+Global properties are stored in redux:
+
+- blockchain
+- settings
+- ui global settings
+
+Local state is in component(web component or d3 component)
 
 # Testing
 

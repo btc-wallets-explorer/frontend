@@ -10,7 +10,7 @@ import {
 
 const WIDTH = 1000;
 const HEIGHT = 600;
-const RECT_WIDTH = 2;
+const RECT_WIDTH = 3;
 
 const createGraph = (store, root, nodes, links, settings) => {
   const query = (q) => root.shadowRoot.querySelector(q);
@@ -303,13 +303,12 @@ const createGraph = (store, root, nodes, links, settings) => {
   });
 };
 
-export const d3OverviewGraph = (root, store, blockchain, settings, wallets) => {
+export const d3OverviewGraph = (root, store, blockchain, wallets) => {
   const model = toOverviewModel(blockchain, wallets);
-  const scalars = store.getState().ui.scalars;
-  const nodes = generateNodes(model, scalars);
+  const nodes = generateNodes(model);
   const links = generateLinks(nodes, model);
 
   console.log(nodes, links);
 
-  createGraph(store, root, nodes, links, scalars, settings);
+  createGraph(store, root, nodes, links);
 };

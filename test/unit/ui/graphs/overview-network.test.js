@@ -4,7 +4,7 @@ import { toOverviewModel } from "../../../../src/ui/graphs/overview/overview-net
 import basicTestData from "../../../test-data/basic-test-data";
 import { createApiMock } from "../../../test-helpers";
 
-describe("history generation", () => {
+describe("overview network generation", () => {
   it("toOverviewModel creates model", async () => {
     const store = createNewStore();
     const api = createApiMock(basicTestData);
