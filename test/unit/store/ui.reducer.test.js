@@ -23,6 +23,7 @@ describe("ui reducer", () => {
       scalars: {
         xAxis: 1,
         yAxis: 1,
+        value: 1,
       },
       forceStrength: {
         charge: 0.1,
@@ -87,9 +88,17 @@ describe("ui reducer", () => {
   it("sets the scaling values", () => {
     store.dispatch(setScalarValues({ xAxis: 12 }));
 
-    expect(store.getState().ui.scalars).toEqual({ xAxis: 12, yAxis: 1 });
+    expect(store.getState().ui.scalars).toEqual({
+      xAxis: 12,
+      yAxis: 1,
+      value: 1,
+    });
 
     store.dispatch(setScalarValues({ yAxis: 12 }));
-    expect(store.getState().ui.scalars).toEqual({ xAxis: 12, yAxis: 12 });
+    expect(store.getState().ui.scalars).toEqual({
+      xAxis: 12,
+      yAxis: 12,
+      value: 1,
+    });
   });
 });

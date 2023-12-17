@@ -26,6 +26,7 @@ export const uiReducer = createReducer(
     scalars: {
       xAxis: 1,
       yAxis: 1,
+      value: 1,
     },
     forceStrength: {
       charge: 0.1,

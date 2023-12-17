@@ -1,7 +1,5 @@
 import { toScriptHash } from "../../../utils/bitcoin";
 
-const STACKING_SIZE = 50;
-
 export const toOverviewModel = (network, wallets) => {
   const getSpendVin = (txid, index, vout) => {
     const scriptHash =
@@ -121,7 +119,6 @@ export const generateNodes = (model) => {
       id: `${obj.wallet}:${history.txid}`,
       name: history.txid,
       time: history.time,
-      y: index * STACKING_SIZE,
       wallet: obj.wallet,
       value: history.utxos.reduce((prev, utxo) => prev + utxo.value, 0),
     })),
