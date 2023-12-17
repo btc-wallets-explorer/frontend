@@ -23,6 +23,8 @@ const createGraph = (store, root, nodes, links, settings) => {
     valueScalar: 30,
     minValue: 0.001 * 30,
     stackSize: 50,
+    highlighted: [],
+    selected: [],
   };
 
   const colorLinks = d3.scaleOrdinal(d3.schemeCategory10);
@@ -64,8 +66,8 @@ const createGraph = (store, root, nodes, links, settings) => {
     .zoom()
     .scaleExtent([1, 100])
     .translateExtent([
-      [0, 0],
-      [WIDTH, HEIGHT],
+      [0, -50],
+      [WIDTH, HEIGHT + 50],
     ])
     .on("zoom", zoomed);
 
@@ -77,14 +79,16 @@ const createGraph = (store, root, nodes, links, settings) => {
 
     const rect = g
       .append("g")
-      .attr("stroke", "white")
-      .attr("stroke-width", 0)
-      .attr("fill", (d) => "white")
       .selectAll()
       .data(nodes)
       .join("rect")
       .attr("class", "node_rect")
-      .attr("id", (d) => (d.selectId = "id" + uniqueId()))
+      .attr("fill", "white")
+      .attr("id", (d) => (d.selectId = `id${uniqueId()}`))
+      .attr("stroke", "yellow")
+      .attr("stroke-width", (d) =>
+        uiSettings.selected.includes(d.name) ? 3 * scale : 0,
+      )
       .attr("x", (d) => tX(d.time))
       .attr("y", (d) => tY(d.wallet) - 3)
       .attr("height", (d) => d.value * uiSettings.valueScalar + 3)
@@ -246,41 +250,50 @@ const createGraph = (store, root, nodes, links, settings) => {
     svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
   }
 
-  const highlighted = [];
   g.on("mousemove", (event) => {
     const mouse = d3.pointer(event);
     const x = mouse[0];
     const y = mouse[1];
+    const wallet = wallets.reduce(
+      (prev, current) =>
+        Math.abs(tY(current) - y) < Math.abs(tY(prev) - y) ? current : prev,
+      wallets[0],
+    );
     const node = nodes.reduce(
       (prev, current) =>
+        current.wallet === wallet &&
         Math.abs(tX(current.time) - x) < Math.abs(tX(prev.time) - x)
           ? current
           : prev,
       nodes[0],
     );
 
-    const element = g.select(`#${node.selectId}`);
-    highlighted.forEach((e) => e.classed("highlighted", false));
-    element.classed("highlighted", true);
-    highlighted.pop();
-    highlighted.push(element);
+    if (!uiSettings.selected.includes(node.name)) {
+      uiSettings.highlighted.forEach((selectId) =>
+        g
+          .select(`#${selectId}`)
+          .attr("stroke", "black")
+          .attr("stroke-width", 0),
+      );
+      g.select(`#${node.selectId}`)
+        .attr("stroke", "purple")
+        .attr("stroke-width", 3 / uiSettings.transform.k);
+      uiSettings.highlighted = [node.selectId];
+    }
+
     g.select(".timeline_line")
       .attr("x1", tX(node.time))
       .attr("x2", tX(node.time));
     g.select(".timeline_date")
       .text(new Date(node.time * 1000).toLocaleDateString())
       .attr("x", tX(node.time));
-
     event.preventDefault();
   });
 
   observe(store, "ui.selections", (data) => {
     const txIds = data.filter((s) => s.type === "transaction").map((s) => s.id);
-
-    d3.selectAll(queryAll(".node_rect")).attr(
-      "class",
-      (d) => `node_rect ${txIds.includes(d.name) ? "selected" : ""}`,
-    );
+    uiSettings.selected = txIds;
+    update(uiSettings);
   });
 
   observe(store, "ui.scalars", (scalars) => {
