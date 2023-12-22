@@ -28,7 +28,8 @@
     "lit-html": "^2.6.1",
     "lodash": "^4.17.21",
     "redux": "^4.2.1",
-    "redux-watch": "^1.2.0"
+    "redux-watch": "^1.2.0",
+    "tiny-secp256k1": "^2.2.3"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
