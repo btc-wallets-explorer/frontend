@@ -8,7 +8,9 @@ export const toOverviewModel = (network, wallets) => {
     const result = scriptHash
       ? scriptHash.transactions
           .map((st) => network.transactions[st.tx_hash])
-          .flatMap((tx) => tx.vin.map((vin) => ({ txid: tx.txid, vin })))
+          .flatMap((tx) =>
+            tx.vin.map((vin, index) => ({ txid: tx.txid, index, vin })),
+          )
           .find(
             (vin_obj) =>
               vin_obj.vin.txid === txid && vin_obj.vin.vout === index,
@@ -121,6 +123,9 @@ export const generateNodes = (model) => {
       time: history.time,
       wallet: obj.wallet,
       value: history.utxos.reduce((prev, utxo) => prev + utxo.value, 0),
+      oldValue: history.utxos
+        .slice(0, -1)
+        .reduce((prev, utxo) => prev + utxo.value, 0),
     })),
   );
 
@@ -128,6 +133,11 @@ export const generateNodes = (model) => {
 };
 
 export const generateLinks = (nodes, model) => {
+  const histories = Object.fromEntries(
+    model.flatMap((w) => w.walletHistory.map((h) => [h.txid, h])),
+  );
+  console.log(histories);
+
   return model.flatMap((obj) => {
     const intraWalletLinks = obj.walletHistory
       .slice(1)
@@ -162,6 +172,25 @@ export const generateLinks = (nodes, model) => {
           (node) => node.id === `${vout.wallet}:${history.txid}`,
         );
 
+        const getTargetOffset = (vout) => {
+          if (vout.spendVin)
+            console.log({
+              vout,
+              target,
+              tx: histories[vout.spendVin.txid],
+              value: histories[vout.spendVin.txid].in
+                .slice(vout.spendVin.index)
+                // .filter((vin) => vin.wallet && vin.wallet !== target.value)
+                .reduce((prev, curr) => curr.value + prev, 0.0),
+            });
+          return vout.spendVin
+            ? histories[vout.spendVin.txid].in
+                .slice(vout.spendVin.index)
+                .filter((vin) => vin.wallet && vin.wallet !== target.wallet)
+                .reduce((prev, curr) => curr.value + prev, 0.0)
+            : 0;
+        };
+
         return {
           type: "inter-wallet",
           source,
@@ -170,6 +199,7 @@ export const generateLinks = (nodes, model) => {
           sourceOffset: vouts
             .slice(index)
             .reduce((prev, v) => v.value + prev, 0),
+          targetOffset: getTargetOffset(vout),
         };
       });
     });

@@ -149,7 +149,8 @@ const createGraph = (store, root, nodes, links, settings) => {
       uiSettings.valueScalar *
       (link.source.value + link.sourceOffset - link.value / 2);
     const getTargetOffset = (link) =>
-      uiSettings.valueScalar * (link.target.value - link.value / 2);
+      uiSettings.valueScalar *
+      (link.target.oldValue + link.targetOffset - link.value / 2);
 
     const createPathForInterWalletUTXO = (link) => {
       const startYOffset = getSourceOffset(link);
