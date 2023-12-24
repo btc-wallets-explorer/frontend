@@ -1,3 +1,4 @@
+import { chunk, flatten } from "lodash";
 import { sendNotification } from "../model/ui.reducer";
 import { createAddresses, toScriptHash } from "../utils/bitcoin";
 
@@ -16,7 +17,11 @@ export const generateModel = async (store, api, wallets) => {
   };
 
   const getTxs = async (txHashes) => {
-    const transactions = await api.getTransactions(txHashes);
+    const transactions = flatten(
+      await Promise.all(
+        chunk(txHashes, 100).map(async (batch) => api.getTransactions(batch)),
+      ),
+    );
 
     return Object.fromEntries(transactions.map((t) => [t.txid, t]));
   };
@@ -31,9 +36,7 @@ export const generateModel = async (store, api, wallets) => {
       );
 
       const addresses = createAddresses(wallet, isChange, start, limit);
-      const histories = await toHistories(
-        addresses.slice(start, start + limit),
-      );
+      const histories = await toHistories(addresses);
       return histories.length < limit / 2
         ? histories
         : [...histories, ...(await fetch(isChange, start + limit, limit))];
