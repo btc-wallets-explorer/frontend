@@ -1,5 +1,6 @@
 import * as btcOutDesc from "@blockchainofthings/btc-output-descriptor";
 import * as bitcoin from "bitcoinjs-lib";
+import { add, range } from "lodash";
 import * as ecc from "tiny-secp256k1";
 
 bitcoin.initEccLib(ecc);
@@ -24,18 +25,16 @@ export const createAddresses = (
     xpub.includes("/*") ? xpub : `${xpub}/${isChange}/*`,
   );
 
-  const expression = btcOutDesc.parse(newDescriptor, "main");
+  return range(startIdx, startIdx + count).map((index) => {
+    const d = newDescriptor.replaceAll("*", index);
+    const address = btcOutDesc.parse(d, "main").addresses[0];
 
-  expression.keyRange = {
-    startIdx,
-    count: startIdx + count,
-  };
-
-  return expression.addresses.map((address, index) => ({
-    address,
-    scriptHash: toScriptHash(address),
-    isChange,
-    index,
-    wallet,
-  }));
+    return {
+      address,
+      scriptHash: toScriptHash(address),
+      isChange,
+      index,
+      wallet,
+    };
+  });
 };
