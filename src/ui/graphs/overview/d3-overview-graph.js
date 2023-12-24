@@ -35,7 +35,8 @@ const createGraph = (store, root, nodes, links, settings) => {
       [0, WIDTH],
     )
     .range([0, WIDTH])
-    .clamp(true);
+    .clamp(true)
+    .nice();
 
   const wallets = Array.from(new Set(nodes.map((n) => n.wallet)));
 

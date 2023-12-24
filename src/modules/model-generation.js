@@ -30,22 +30,24 @@ export const generateModel = async (store, api, wallets) => {
     const fetch = async (isChange, start, limit) => {
       store.dispatch(
         sendNotification({
-          title: "fetching addresses",
-          content: `${wallet.name} - ${start}-${start + limit}`,
+          title: "fetching",
+          content: `${isChange ? "change" : ""} addresses for ${
+            wallet.name
+          } - ${start}-${start + limit}`,
         }),
       );
 
       const addresses = createAddresses(wallet, isChange, start, limit);
       const histories = await toHistories(addresses);
-      return histories.length < limit / 2
-        ? histories
-        : [...histories, ...(await fetch(isChange, start + limit, limit))];
+      return histories.length > 0
+        ? [...histories, ...(await fetch(isChange, start + limit, limit))]
+        : histories;
     };
 
-    const batchSize = 100;
+    const gapLimit = 50;
     const scriptHashes = [
-      ...(await fetch(0, 0, batchSize)),
-      ...(await fetch(1, 0, batchSize)),
+      ...(await fetch(0, 0, gapLimit)),
+      ...(await fetch(1, 0, gapLimit)),
     ];
 
     return scriptHashes;
