@@ -4,7 +4,7 @@ describe("State", () => {
   it("exports state elements", () => {
     expect(States).toEqual({
       STORE: "store",
-      BACKEND_CONNECTION: "backend-connection",
+      API: "backend-connection",
     });
   });
 

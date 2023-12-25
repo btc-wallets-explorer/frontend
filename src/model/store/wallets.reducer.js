@@ -1,15 +1,17 @@
-/* eslint-disable no-param-reassign */
-import { createReducer, createAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
-export const addWallets = createAction("wallets/add");
-export const removeWallets = createAction("wallets/remove");
-export const clearWallets = createAction("wallets/clear");
+export const initialState = [];
 
-export const walletsReducer = createReducer([], (builder) =>
-  builder
-    .addCase(addWallets, (state, action) => [...state, ...action.payload])
-    .addCase(removeWallets, (state, action) =>
+const slice = createSlice({
+  name: "wallets",
+  initialState,
+  reducers: {
+    addWallets: (_, action) => action.payload,
+    removeWallets: (state, action) =>
       state.filter((w) => !action.payload.includes(w.name)),
-    )
-    .addCase(clearWallets, () => []),
-);
+    clearWallets: () => [],
+  },
+});
+
+export const { addWallets, removeWallets, clearWallets } = slice.actions;
+export default slice.reducer;

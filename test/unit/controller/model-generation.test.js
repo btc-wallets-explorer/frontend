@@ -1,5 +1,5 @@
+import { loadBlockchainState } from "../../../src/controller/model-generation";
 import { createNewStore } from "../../../src/model/store/store";
-import { generateModel } from "../../../src/modules/model-generation";
 import basicTestData from "../../test-data/basic-test-data";
 import { createApiMock } from "../../test-helpers";
 
@@ -10,7 +10,7 @@ describe("model generation", () => {
     const api = createApiMock(basicTestData);
     const wallets = await api.getWallets();
 
-    const actual = await generateModel(store, api, wallets);
+    const actual = await loadBlockchainState(store, api, wallets);
 
     expect(actual.transactions).toEqual(basicTestData.blockchain.transactions);
     expect(actual.utxos).toEqual(basicTestData.blockchain.utxos);

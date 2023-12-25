@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { createSlice } from "@reduxjs/toolkit";
 import _ from "lodash";
 
@@ -70,6 +69,4 @@ export const {
   clearSelections,
 } = slice.actions;
 
-export const uiReducer = slice.reducer;
-
-export default uiReducer;
+export default slice.reducer;

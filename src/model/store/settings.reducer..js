@@ -1,11 +1,17 @@
-/* eslint-disable no-param-reassign */
-import { createReducer, createAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
-export const setSettings = createAction("settings/set");
+export const initialState = {
+  "block-explorer-url": "",
+};
 
-export const settingsReducer = createReducer(
-  {
-    "block-explorer-url": "",
+export const slice = createSlice({
+  name: "settings",
+  initialState,
+  reducers: {
+    setSettings: (_, action) => action.payload,
   },
-  (builder) => builder.addCase(setSettings, (state, action) => action.payload),
-);
+});
+
+export const { setSettings } = slice.actions;
+
+export default slice.reducer;
