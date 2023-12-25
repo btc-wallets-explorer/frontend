@@ -4,7 +4,7 @@ const baseConfig = require("./webpack.config.base");
 module.exports = {
   entry: {
     config: ["./assets/config.js"],
-    app: ["./src/main.js"],
+    app: ["./src/main.ts"],
   },
   output: {
     path: path.resolve(__dirname, "dist"),

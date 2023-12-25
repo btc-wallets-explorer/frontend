@@ -1,11 +1,11 @@
-const ELEMENTS = Object.freeze({
+export const ELEMENTS = Object.freeze({
   STORE: "store",
   BACKEND_CONNECTION: "backend-connection",
 });
 
 const stateObjects = {};
 
-const getState = (name) => {
+export const getState = (name) => {
   if (!Object.values(ELEMENTS).includes(name)) {
     throw new Error(`'${name}' is not known.`);
   }
@@ -17,7 +17,7 @@ const getState = (name) => {
   return stateObjects[name];
 };
 
-const injectState = (name, value) => {
+export const injectState = (name, value) => {
   if (!Object.values(ELEMENTS).includes(name)) {
     throw new Error(`'${name}' is not known.`);
   }
@@ -28,13 +28,7 @@ const injectState = (name, value) => {
 
   stateObjects[name] = value;
 };
-const resetState = () => {
-  Object.keys(stateObjects).forEach((key) => delete stateObjects[key]);
-};
 
-module.exports = {
-  ELEMENTS,
-  getState,
-  injectState,
-  resetState,
+export const resetState = () => {
+  Object.keys(stateObjects).forEach((key) => delete stateObjects[key]);
 };
