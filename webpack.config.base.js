@@ -14,6 +14,11 @@ module.exports = {
         test: /\.css$/,
         use: ["to-string-loader", "css-loader"],
       },
+      {
+        test: /\.tsx?$/,
+        use: "ts-loader",
+        exclude: /node_modules/,
+      },
     ],
   },
   plugins: [
@@ -23,6 +28,7 @@ module.exports = {
     }),
   ],
   resolve: {
+    extensions: [".tsx", ".ts", ".js"],
     fallback: {
       https: false,
       http: false,
