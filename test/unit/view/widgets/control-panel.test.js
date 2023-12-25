@@ -1,11 +1,11 @@
-import { createNewStore } from "../../../../src/model/store";
+import { createNewStore } from "../../../../src/model/store/store";
 import {
   VIEWING_MODES,
   setViewingMode,
-} from "../../../../src/model/ui.reducer";
+} from "../../../../src/model/store/ui.reducer";
 import { ELEMENTS, injectState, resetState } from "../../../../src/state";
-import { registerWebComponents } from "../../../../src/ui";
-import { ControlPanel } from "../../../../src/ui/widgets/control-panel";
+import { registerWebComponents } from "../../../../src/view";
+import { ControlPanel } from "../../../../src/view/widgets/control-panel";
 import { TestUtils } from "../../../test-utils";
 
 describe("Control Panel", () => {

@@ -1,19 +1,19 @@
 import { html } from "lit";
-import { observe } from "../../../model/store";
+import { observe } from "../../../model/store/store";
 import { Base } from "../../base";
-import css from "./overview-graph.css";
-import { d3OverviewGraph } from "./d3-overview-graph";
+import css from "./detailed-graph.css";
+import { d3ForceGraph } from "./d3-detailed-graph";
 
-export class OverviewGraph extends Base {
+export class DetailedGraph extends Base {
   connectedCallback() {
     super.connectedCallback();
 
     observe(this.store, "blockchain", (blockchain) => {
-      d3OverviewGraph(
+      d3ForceGraph(
         this,
         this.store,
         blockchain,
-        this.store.getState().wallets,
+        this.store.getState().settings,
       );
     });
   }
@@ -29,6 +29,6 @@ export class OverviewGraph extends Base {
   }
 
   static get tag() {
-    return "overview-graph";
+    return "detailed-graph";
   }
 }

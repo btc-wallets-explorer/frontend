@@ -1,5 +1,5 @@
-import { setBlockchain } from "../../../src/model/blockchain.reducer";
-import { createNewStore } from "../../../src/model/store";
+import { setBlockchain } from "../../../src/model/store/blockchain.reducer";
+import { createNewStore } from "../../../src/model/store/store";
 
 describe("blockchain reducer", () => {
   let store;

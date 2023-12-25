@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { html } from "lit";
 import { classMap } from "lit-html/directives/class-map.js";
-import { observe } from "../../model/store";
+import { observe } from "../../model/store/store";
 import { Base } from "../base";
 import css from "./legend.css";
 

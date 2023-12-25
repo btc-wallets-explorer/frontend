@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import watch from "redux-watch";
-import { addSelection, removeSelection } from "../../../model/ui.reducer";
+import { addSelection, removeSelection } from "../../../model/store/ui.reducer";
 import { createNetwork } from "./detailed-network";
 
 const nodeWidth = 10;

@@ -1,12 +1,12 @@
 import { html } from "lit";
 import { classMap } from "lit-html/directives/class-map.js";
-import { observe } from "../../model/store";
+import { observe } from "../../model/store/store";
 import {
   VIEWING_MODES,
   setForceStrength,
   setScalarValues,
   setViewingMode,
-} from "../../model/ui.reducer";
+} from "../../model/store/ui.reducer";
 import { Base } from "../base";
 import css from "./control-panel.css";
 

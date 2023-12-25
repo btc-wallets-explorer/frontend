@@ -1,5 +1,5 @@
-import { setSettings } from "../../../src/model/settings.reducer.";
-import { createNewStore } from "../../../src/model/store";
+import { setSettings } from "../../../src/model/store/settings.reducer.";
+import { createNewStore } from "../../../src/model/store/store";
 
 describe("settings reducer", () => {
   let store;

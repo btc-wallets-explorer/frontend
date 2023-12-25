@@ -1,4 +1,4 @@
-import { toScriptHash } from "../../../utils/bitcoin";
+import { toScriptHash } from "../../../controller/utils/bitcoin";
 
 export const toOverviewModel = (network, wallets) => {
   const getSpendVin = (txid, index, vout) => {

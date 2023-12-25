@@ -1,5 +1,5 @@
 import * as BtcOutDesc from "@blockchainofthings/btc-output-descriptor";
-import { toScriptHash } from "../../src/utils/bitcoin";
+import { toScriptHash } from "../../src/controller/utils/bitcoin";
 
 const settings = {
   "block-explorer-url": "https://mempool.some.domain:8080/tx/",

@@ -1,14 +1,14 @@
 import { html } from "lit";
-import { setSettings } from "../model/settings.reducer.";
-import { addWallets } from "../model/wallets.reducer";
-import { generateModel } from "../modules/model-generation";
+import { setSettings } from "../model/store/settings.reducer.";
+import { addWallets } from "../model/store/wallets.reducer";
+import { generateModel } from "../controller/model-generation";
 
-import { setBlockchain } from "../model/blockchain.reducer";
-import { observe } from "../model/store";
+import { setBlockchain } from "../model/store/blockchain.reducer";
+import { observe } from "../model/store/store";
 import { ELEMENTS, getState } from "../state";
 import appCss from "./app.css";
 import { Base } from "./base";
-import { VIEWING_MODES } from "../model/ui.reducer";
+import { VIEWING_MODES } from "../model/store/ui.reducer";
 import { createApiMock } from "../../test/test-helpers";
 import basicTestData from "../../test/test-data/basic-test-data";
 

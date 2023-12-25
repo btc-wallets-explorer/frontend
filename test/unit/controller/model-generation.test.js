@@ -1,4 +1,4 @@
-import { createNewStore } from "../../../src/model/store";
+import { createNewStore } from "../../../src/model/store/store";
 import { generateModel } from "../../../src/modules/model-generation";
 import basicTestData from "../../test-data/basic-test-data";
 import { createApiMock } from "../../test-helpers";

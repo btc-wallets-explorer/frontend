@@ -1,12 +1,12 @@
-import { createNewStore } from "../../../../src/model/store";
+import { createNewStore } from "../../../../src/model/store/store";
 import {
   VIEWING_MODES,
   setViewingMode,
-} from "../../../../src/model/ui.reducer";
-import { addWallets } from "../../../../src/model/wallets.reducer";
+} from "../../../../src/model/store/ui.reducer";
+import { addWallets } from "../../../../src/model/store/wallets.reducer";
 import { ELEMENTS, injectState, resetState } from "../../../../src/state";
-import { registerWebComponents } from "../../../../src/ui";
-import { Kegebd } from "../../../../src/ui/widgets/legend";
+import { registerWebComponents } from "../../../../src/view";
+import { Kegebd } from "../../../../src/view/widgets/legend";
 import { TestUtils } from "../../../test-utils";
 
 describe("Legend", () => {

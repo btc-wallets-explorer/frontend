@@ -1,12 +1,12 @@
 import { Server } from "mock-socket";
 import { initialize } from "../../src/init";
 import { ELEMENTS, getState } from "../../src/state";
-import { App } from "../../src/ui/app";
-import { DetailedGraph } from "../../src/ui/graphs/detailed/detailed-graph";
-import { OverviewGraph } from "../../src/ui/graphs/overview/overview-graph";
-import { ControlPanel } from "../../src/ui/widgets/control-panel";
-import { Notifications } from "../../src/ui/widgets/notifications";
-import { SelectionInfo } from "../../src/ui/widgets/selection-info";
+import { App } from "../../src/view/app";
+import { DetailedGraph } from "../../src/view/graphs/detailed/detailed-graph";
+import { OverviewGraph } from "../../src/view/graphs/overview/overview-graph";
+import { ControlPanel } from "../../src/view/widgets/control-panel";
+import { Notifications } from "../../src/view/widgets/notifications";
+import { SelectionInfo } from "../../src/view/widgets/selection-info";
 
 describe("Main", () => {
   it("sets up the state and registers web components", async () => {

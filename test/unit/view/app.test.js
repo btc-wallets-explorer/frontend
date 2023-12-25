@@ -1,8 +1,11 @@
-import { createNewStore } from "../../../src/model/store";
-import { VIEWING_MODES, setViewingMode } from "../../../src/model/ui.reducer";
+import { createNewStore } from "../../../src/model/store/store";
+import {
+  VIEWING_MODES,
+  setViewingMode,
+} from "../../../src/model/store/ui.reducer";
 import { ELEMENTS, injectState, resetState } from "../../../src/state";
-import { registerWebComponents } from "../../../src/ui";
-import { App } from "../../../src/ui/app";
+import { registerWebComponents } from "../../../src/view";
+import { App } from "../../../src/view/app";
 import { TestUtils } from "../../test-utils";
 
 describe("App Element", () => {

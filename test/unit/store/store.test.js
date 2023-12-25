@@ -1,6 +1,6 @@
-import { createNewStore, observe } from "../../../src/model/store";
-import { sendNotification } from "../../../src/model/ui.reducer";
-import { addWallets } from "../../../src/model/wallets.reducer";
+import { createNewStore, observe } from "../../../src/model/store/store";
+import { sendNotification } from "../../../src/model/store/ui.reducer";
+import { addWallets } from "../../../src/model/store/wallets.reducer";
 import { timeout } from "../../test-helpers";
 
 describe("store test", () => {

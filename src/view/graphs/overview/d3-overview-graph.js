@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { transform, uniqueId } from "lodash";
-import { observe } from "../../../model/store";
-import { addSelection, removeSelection } from "../../../model/ui.reducer";
+import { observe } from "../../../model/store/store";
+import { addSelection, removeSelection } from "../../../model/store/ui.reducer";
 import {
   generateLinks,
   generateNodes,

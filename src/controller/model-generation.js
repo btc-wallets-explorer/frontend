@@ -1,6 +1,6 @@
 import { chunk, flatten } from "lodash";
-import { sendNotification } from "../model/ui.reducer";
-import { createAddresses, toScriptHash } from "../utils/bitcoin";
+import { sendNotification } from "../model/store/ui.reducer";
+import { createAddresses, toScriptHash } from "./utils/bitcoin";
 
 export const generateModel = async (store, api, wallets) => {
   const toHistories = async (addressObjs) => {
