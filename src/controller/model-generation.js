@@ -2,7 +2,7 @@ import { chunk, flatten } from "lodash";
 import { sendNotification } from "../model/store/ui.reducer";
 import { createAddresses, toScriptHash } from "./utils/bitcoin";
 
-export const generateModel = async (store, api, wallets) => {
+export const loadBlockchainState = async (store, api, wallets) => {
   const toHistories = async (addressObjs) => {
     const hashes = addressObjs.map((o) => toScriptHash(o.address));
     const histories = await api.getHistories(hashes);

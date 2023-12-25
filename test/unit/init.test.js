@@ -1,6 +1,6 @@
 import { Server } from "mock-socket";
 import { initialize } from "../../src/init";
-import { ELEMENTS, getState } from "../../src/state";
+import { States, getState } from "../../src/state";
 import { App } from "../../src/view/app";
 import { DetailedGraph } from "../../src/view/graphs/detailed/detailed-graph";
 import { OverviewGraph } from "../../src/view/graphs/overview/overview-graph";
@@ -18,10 +18,10 @@ describe("Main", () => {
     window.bwe = { "backend-url": mockUrl };
     await initialize();
 
-    const store = getState(ELEMENTS.STORE);
+    const store = getState(States.STORE);
     expect(store).toBeDefined();
 
-    const connection = getState(ELEMENTS.BACKEND_CONNECTION);
+    const connection = getState(States.API);
     expect(connection).toBeDefined();
 
     const components = [

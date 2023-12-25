@@ -3,7 +3,7 @@ import {
   VIEWING_MODES,
   setViewingMode,
 } from "../../../src/model/store/ui.reducer";
-import { ELEMENTS, injectState, resetState } from "../../../src/state";
+import { States, injectState, resetState } from "../../../src/state";
 import { registerWebComponents } from "../../../src/view";
 import { App } from "../../../src/view/app";
 import { TestUtils } from "../../test-utils";
@@ -20,7 +20,7 @@ describe("App Element", () => {
   beforeEach(async () => {
     resetState();
     store = createNewStore();
-    injectState(ELEMENTS.STORE, store);
+    injectState(States.STORE, store);
 
     connection = {
       getSettings: () => {},
@@ -28,7 +28,7 @@ describe("App Element", () => {
       getTransactions: () => [],
       getUTXOs: () => [],
     };
-    injectState(ELEMENTS.BACKEND_CONNECTION, connection);
+    injectState(States.API, connection);
 
     element = await TestUtils.render(App.tag);
   });

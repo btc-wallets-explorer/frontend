@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { createReducer, createAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import _ from "lodash";
 
 export const VIEWING_MODES = Object.freeze({
@@ -7,71 +7,69 @@ export const VIEWING_MODES = Object.freeze({
   DETAIL: "deatil",
 });
 
-export const setViewingMode = createAction("ui/mode/set");
-
-export const setScalarValues = createAction("ui/scalars/set");
-export const setForceStrength = createAction("ui/force/set");
-
-export const sendNotification = createAction("ui/notification/send");
-
-export const addSelection = createAction("ui/selection/add");
-export const removeSelection = createAction("ui/selection/remove");
-export const clearSelections = createAction("ui/selection/clear");
-
-export const uiReducer = createReducer(
-  {
-    mode: "overview",
-    notifications: [],
-    selections: [],
-    scalars: {
-      xAxis: 1,
-      yAxis: 1,
-      value: 1,
+export const initialState = {
+  mode: "overview",
+  notifications: [],
+  selections: [],
+  scalars: {
+    xAxis: 1,
+    yAxis: 1,
+    value: 1,
+  },
+  forceStrength: {
+    charge: 0.1,
+    link: 0.1,
+    collide: 1.0,
+    x: 0.1,
+    y: 0.1,
+  },
+};
+const slice = createSlice({
+  name: "ui",
+  initialState,
+  reducers: {
+    setViewingMode(state, action) {
+      state.mode = action.payload;
     },
-    forceStrength: {
-      charge: 0.1,
-      link: 0.1,
-      collide: 1.0,
-      x: 0.1,
-      y: 0.1,
+    setScalarValues(state, action) {
+      state.scalars = {
+        ...state.scalars,
+        ...action.payload,
+      };
+    },
+    setForceStrength(state, action) {
+      state.forceStrength = {
+        ...state.forceStrength,
+        [action.payload.target]: action.payload.value,
+      };
+    },
+    sendNotification(state, action) {
+      state.notifications = [...state.notifications, action.payload];
+    },
+    addSelection(state, action) {
+      state.selections = [...state.selections, action.payload];
+    },
+    removeSelection(state, action) {
+      state.selections = state.selections.filter(
+        (s) => !_.isEqual(s, action.payload),
+      );
+    },
+    clearSelections(state) {
+      state.selections = [];
     },
   },
-  (builder) =>
-    builder
-      .addCase(setViewingMode, (state, action) => ({
-        ...state,
-        mode: action.payload,
-      }))
-      .addCase(setScalarValues, (state, action) => ({
-        ...state,
-        scalars: {
-          ...state.scalars,
-          ...action.payload,
-        },
-      }))
-      .addCase(setForceStrength, (state, action) => ({
-        ...state,
-        forceStrength: {
-          ...state.forceStrength,
-          [action.payload.target]: action.payload.value,
-        },
-      }))
-      .addCase(sendNotification, (state, action) => ({
-        ...state,
-        notifications: [...state.notifications, action.payload],
-      }))
-      .addCase(addSelection, (state, action) => ({
-        ...state,
-        selections: [...state.selections, action.payload],
-      }))
-      .addCase(removeSelection, (state, action) => ({
-        ...state,
-        selections: state.selections.filter(
-          (s) => !_.isEqual(s, action.payload),
-        ),
-      }))
-      .addCase(clearSelections, (state) => ({
-        ...state,
-        selections: [],
-      })),
-);
+});
+
+export const {
+  setViewingMode,
+  setScalarValues,
+  setForceStrength,
+  sendNotification,
+  addSelection,
+  removeSelection,
+  clearSelections,
+} = slice.actions;
+
+export const uiReducer = slice.reducer;
+
+export default uiReducer;

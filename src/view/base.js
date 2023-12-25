@@ -1,11 +1,11 @@
 import { html, LitElement } from "lit";
-import { ELEMENTS, getState } from "../state";
+import { States, getState } from "../state";
 import baseCss from "./base.css";
 
 export class Base extends LitElement {
   constructor() {
     super();
-    this.store = getState(ELEMENTS.STORE);
+    this.store = getState(States.STORE);
   }
 
   // eslint-disable-next-line class-methods-use-this

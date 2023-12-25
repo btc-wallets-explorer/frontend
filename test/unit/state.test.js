@@ -1,8 +1,8 @@
-import { ELEMENTS, getState, injectState } from "../../src/state";
+import { States, getState, injectState } from "../../src/state";
 
 describe("State", () => {
   it("exports state elements", () => {
-    expect(ELEMENTS).toEqual({
+    expect(States).toEqual({
       STORE: "store",
       BACKEND_CONNECTION: "backend-connection",
     });
@@ -14,7 +14,7 @@ describe("State", () => {
     }).toThrowError("'does-not-exist' is not known.");
 
     expect(() => {
-      getState(ELEMENTS.STORE);
+      getState(States.STORE);
     }).toThrowError("'store' is not injected yet.");
 
     expect(() => {
@@ -23,12 +23,12 @@ describe("State", () => {
 
     // inject / getState;
     const expected = { test: true };
-    injectState(ELEMENTS.STORE, expected);
-    expect(getState(ELEMENTS.STORE)).toBe(expected);
+    injectState(States.STORE, expected);
+    expect(getState(States.STORE)).toBe(expected);
 
     // inject again
     expect(() => {
-      injectState(ELEMENTS.STORE, {});
+      injectState(States.STORE, {});
     }).toThrowError("'store' was already injected.");
   });
 });

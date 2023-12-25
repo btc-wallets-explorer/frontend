@@ -1,11 +1,11 @@
 import { html } from "lit";
 import { setSettings } from "../model/store/settings.reducer.";
 import { addWallets } from "../model/store/wallets.reducer";
-import { generateModel } from "../controller/model-generation";
+import { loadBlockchainState } from "../controller/model-generation";
 
 import { setBlockchain } from "../model/store/blockchain.reducer";
 import { observe } from "../model/store/store";
-import { ELEMENTS, getState } from "../state";
+import { States, getState } from "../state";
 import appCss from "./app.css";
 import { Base } from "./base";
 import { VIEWING_MODES } from "../model/store/ui.reducer";
@@ -19,7 +19,7 @@ export class App extends Base {
 
   constructor() {
     super();
-    this.store = getState(ELEMENTS.STORE);
+    this.store = getState(States.STORE);
     this.mode = this.store.getState().ui.mode;
   }
 
@@ -31,7 +31,7 @@ export class App extends Base {
     });
 
     const fetchData = async () => {
-      const api = getState(ELEMENTS.BACKEND_CONNECTION);
+      const api = getState(States.API);
       // const api = await createApiMock(basicTestData);
 
       const settings = await api.getSettings();
@@ -40,7 +40,7 @@ export class App extends Base {
       const wallets = await api.getWallets();
       this.store.dispatch(addWallets(wallets));
 
-      const model = await generateModel(this.store, api, wallets);
+      const model = await loadBlockchainState(this.store, api, wallets);
       this.store.dispatch(setBlockchain(model));
       console.log(model);
     };

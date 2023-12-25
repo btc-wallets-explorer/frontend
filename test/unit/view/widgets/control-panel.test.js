@@ -3,7 +3,7 @@ import {
   VIEWING_MODES,
   setViewingMode,
 } from "../../../../src/model/store/ui.reducer";
-import { ELEMENTS, injectState, resetState } from "../../../../src/state";
+import { States, injectState, resetState } from "../../../../src/state";
 import { registerWebComponents } from "../../../../src/view";
 import { ControlPanel } from "../../../../src/view/widgets/control-panel";
 import { TestUtils } from "../../../test-utils";
@@ -19,7 +19,7 @@ describe("Control Panel", () => {
   beforeEach(async () => {
     resetState();
     store = createNewStore();
-    injectState(ELEMENTS.STORE, store);
+    injectState(States.STORE, store);
 
     element = await TestUtils.render(ControlPanel.tag);
   });

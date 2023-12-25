@@ -57,7 +57,8 @@ const generateTXONodes = (transactionMap) =>
     tx,
   }));
 
-export const createNetwork = (chain) => {
+export const createNetwork = (store) => {
+  const chain = store.getState().blockchain;
   const utxoLinks = generateUTXOLinks(
     chain.utxos,
     chain.transactions,
@@ -71,5 +72,6 @@ export const createNetwork = (chain) => {
 
   const nodes = [...txoNodes, ...utxoNodes];
 
-  return { nodes, links };
+  const detailGraph = { ...store.detailGraph, links, nodes };
+  return { ...store, detailGraph };
 };

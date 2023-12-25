@@ -4,7 +4,7 @@ import {
   setViewingMode,
 } from "../../../../src/model/store/ui.reducer";
 import { addWallets } from "../../../../src/model/store/wallets.reducer";
-import { ELEMENTS, injectState, resetState } from "../../../../src/state";
+import { States, injectState, resetState } from "../../../../src/state";
 import { registerWebComponents } from "../../../../src/view";
 import { Kegebd } from "../../../../src/view/widgets/legend";
 import { TestUtils } from "../../../test-utils";
@@ -20,7 +20,7 @@ describe("Legend", () => {
   beforeEach(async () => {
     resetState();
     store = createNewStore();
-    injectState(ELEMENTS.STORE, store);
+    injectState(States.STORE, store);
 
     element = await TestUtils.render(Kegebd.tag);
   });
