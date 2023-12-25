@@ -1,4 +1,4 @@
-import { loadBlockchainState } from "../../../../src/controller/model-generation";
+import { loadBlockchain } from "../../../../src/controller/fetch-data";
 import { createNewStore } from "../../../../src/model/store/store";
 import { toOverviewModel } from "../../../../src/view/graphs/overview/overview-network";
 import basicTestData from "../../../test-data/basic-test-data";
@@ -9,7 +9,7 @@ describe("overview network generation", () => {
     const store = createNewStore();
     const api = createApiMock(basicTestData);
     const wallets = await api.getWallets();
-    const data = await loadBlockchainState(store, api, wallets);
+    const data = await loadBlockchain(store, api, wallets);
     const model = toOverviewModel(data, wallets);
 
     expect(model).toEqual([

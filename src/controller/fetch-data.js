@@ -1,8 +1,23 @@
 import { chunk, flatten } from "lodash";
+import { setBlockchain } from "../model/store/blockchain.reducer";
+import { setSettings } from "../model/store/settings.reducer.";
 import { sendNotification } from "../model/store/ui.reducer";
+import { addWallets } from "../model/store/wallets.reducer";
 import { createAddresses, toScriptHash } from "./utils/bitcoin";
 
-export const loadBlockchainState = async (store, api, wallets) => {
+export const loadSettings = (api) => async (dispatch) => {
+  const settings = await api.getSettings();
+  dispatch(setSettings(settings));
+};
+
+export const loadWallets = (api) => async (dispatch) => {
+  const wallets = await api.getWallets();
+  dispatch(addWallets(wallets));
+};
+
+export const loadBlockchain = (api) => async (dispatch, getState) => {
+  const wallets = getState().wallets;
+
   const toHistories = async (addressObjs) => {
     const hashes = addressObjs.map((o) => toScriptHash(o.address));
     const histories = await api.getHistories(hashes);
@@ -28,10 +43,10 @@ export const loadBlockchainState = async (store, api, wallets) => {
 
   const fetchAllScriptHashes = async (wallet) => {
     const fetch = async (isChange, start, limit) => {
-      store.dispatch(
+      dispatch(
         sendNotification({
           title: "fetching",
-          content: `${isChange ? "change" : ""} addresses for ${
+          content: `${isChange ? "change" : ""} adresses for ${
             wallet.name
           } - ${start}-${start + limit}`,
         }),
@@ -70,9 +85,11 @@ export const loadBlockchainState = async (store, api, wallets) => {
     scriptHashes.map((h) => [h.scriptHash, h]),
   );
 
-  return {
-    transactions: transactionMap,
-    scriptHashes: scriptHashMap,
-    utxos: utxoMap,
-  };
+  dispatch(
+    setBlockchain({
+      transactions: transactionMap,
+      scriptHashes: scriptHashMap,
+      utxos: utxoMap,
+    }),
+  );
 };
