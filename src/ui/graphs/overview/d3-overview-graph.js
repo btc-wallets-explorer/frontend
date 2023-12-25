@@ -31,7 +31,7 @@ const createGraph = (store, root, nodes, links, settings) => {
 
   const timeScale = d3
     .scaleTime(
-      d3.extent(nodes, (n) => new Date(n.time * 1000)),
+      [d3.min(nodes.map((n) => new Date(n.time * 1000))), new Date()],
       [0, WIDTH],
     )
     .range([0, WIDTH])
@@ -67,8 +67,8 @@ const createGraph = (store, root, nodes, links, settings) => {
     .zoom()
     .scaleExtent([1, 100])
     .translateExtent([
-      [0, -50],
-      [WIDTH, HEIGHT + 50],
+      [0, 0],
+      [WIDTH, HEIGHT],
     ])
     .on("zoom", zoomed);
 
