@@ -9,7 +9,11 @@ KARMA_SPEC='**/d3-overview-graph.test.js' npm run test:single
 
 # Architecture
 
-Redux base model:
+Model, View, Controller
+
+## Model
+
+Redux base model (`model/store`):
 
 ```
 {
@@ -18,6 +22,7 @@ Redux base model:
         utxos: [],
         scriptHashes: []
     }
+    ...
 }
 ```
 
@@ -27,7 +32,16 @@ Global properties are stored in redux:
 - settings
 - ui global settings
 
-Local state is in component(web component or d3 component)
+TypeScript type definitions in `model/domain`.
+
+## Controller
+
+For controlling the model, redux actions (reducers) are being used.
+
+## View
+
+The user interface is ipmlemented as WebComponents using the _lit_ library.
+For the graphs D3 is used.
 
 # Testing
 
@@ -39,27 +53,3 @@ Another way is mocking the 'api' to provide the test data objects.
 ```
 const api = createApiMock(basicTestData);
 ```
-
-# Project structure
-
-## 'src/model`
-
-Redux model of application - global state
-
-## 'src/modules'
-
-Processing modules:
-
-- API.
-- Generation of the redux model.
-
-## 'src/ui'
-
-User Interface:
-
-- Graphs (overview, detailed)
-- Widgets
-
-## 'src/utils'
-
-Utility files

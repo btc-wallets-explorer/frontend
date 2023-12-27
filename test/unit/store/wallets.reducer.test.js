@@ -1,9 +1,9 @@
-import { createNewStore } from "../../../src/model/store";
+import { createNewStore } from "../../../src/model/store/store";
 import {
   addWallets,
   clearWallets,
   removeWallets,
-} from "../../../src/model/wallets.reducer";
+} from "../../../src/model/store/wallets.reducer";
 
 describe("wallets reducer", () => {
   let store;

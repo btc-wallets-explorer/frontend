@@ -1,4 +1,4 @@
-import { createNewStore } from "../../../src/model/store";
+import { createNewStore } from "../../../src/model/store/store";
 import {
   VIEWING_MODES,
   addSelection,
@@ -7,7 +7,7 @@ import {
   sendNotification,
   setScalarValues,
   setViewingMode,
-} from "../../../src/model/ui.reducer";
+} from "../../../src/model/store/ui.reducer";
 
 describe("ui reducer", () => {
   let store;
