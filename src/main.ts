@@ -7,7 +7,7 @@ const initialize = async () => {
   const store = createNewStore();
   injectState(States.STORE, store);
 
-  console.log("Connecting to ", window["bwe"]["backend-url"]);
+  console.info("Connecting to ", window["bwe"]["backend-url"]);
   const connection = await createConnection(window["bwe"]["backend-url"]);
   injectState(States.API, connection);
 

@@ -2,20 +2,12 @@ import * as d3 from "d3";
 import { transform, uniqueId } from "lodash";
 import { observe } from "../../../model/store/store";
 import { addSelection, removeSelection } from "../../../model/store/ui.reducer";
-import {
-  generateLinks,
-  generateNodes,
-  toOverviewModel,
-} from "./overview-network";
 
-const WIDTH = 1000;
-const HEIGHT = 600;
 const RECT_WIDTH = 3;
 
-const createGraph = (store, root, nodes, links, settings) => {
-  const query = (q) => root.shadowRoot.querySelector(q);
-  const queryAll = (q) => root.shadowRoot.querySelectorAll(q);
-
+export const renderGraph = (root, store, network, WIDTH, HEIGHT) => {
+  const svg = d3.select(root.shadowRoot.querySelector("svg"));
+  const g = d3.select(root.shadowRoot.querySelector(".canvas"));
   const state = store.getState();
   const uiSettings = {
     transform: { k: 1, x: 0, y: 0 },
@@ -31,31 +23,20 @@ const createGraph = (store, root, nodes, links, settings) => {
 
   const timeScale = d3
     .scaleTime(
-      [d3.min(nodes.map((n) => new Date(n.time * 1000))), new Date()],
+      [d3.min(network.nodes.map((n) => new Date(n.time * 1000))), new Date()],
       [0, WIDTH],
     )
     .range([0, WIDTH])
     .clamp(true)
     .nice();
 
-  const wallets = Array.from(new Set(nodes.map((n) => n.wallet)));
+  const wallets = Array.from(new Set(network.nodes.map((n) => n.wallet)));
 
   const tX = (time) => timeScale(new Date(time * 1000));
   const tY = (wallet) =>
     wallets.indexOf(wallet) * uiSettings.stackSize * uiSettings.yAxisScale;
 
   const xAxis = d3.axisTop(timeScale);
-
-  // Create a SVG container.
-  const svg = d3
-    .select(query(".graph"))
-    .append("svg")
-    .attr("width", "100%")
-    .attr("height", "100%")
-    .attr("preserveAspectRatio", "xMaxYMin slice")
-    .attr("viewBox", [0, 0, WIDTH, HEIGHT]);
-
-  const g = svg.append("g");
 
   const gX = svg
     .append("g")
@@ -81,11 +62,11 @@ const createGraph = (store, root, nodes, links, settings) => {
     const rect = g
       .append("g")
       .selectAll()
-      .data(nodes)
+      .data(network.nodes)
       .join("rect")
       .attr("class", "node_rect")
       .attr("fill", "white")
-      .attr("id", (d) => (d.selectId = `id${uniqueId()}`))
+      // .attr("id", (d) => (selectionMap[d.txid] = `id${uniqueId()}`))
       .attr("stroke", "yellow")
       .attr("stroke-width", (d) =>
         uiSettings.selected.includes(d.name) ? 3 * scale : 0,
@@ -124,7 +105,7 @@ const createGraph = (store, root, nodes, links, settings) => {
     const linkIntra = g
       .append("g")
       .selectAll()
-      .data(links.filter((l) => l.type === "intra-wallet"))
+      .data(network.links.filter((l) => l.type === "intra-wallet"))
       .join("line")
       .attr("x1", (d) => tX(d.source.time) + RECT_WIDTH * scale)
       .attr(
@@ -173,7 +154,7 @@ const createGraph = (store, root, nodes, links, settings) => {
     const linkInter = g
       .append("g")
       .selectAll()
-      .data(links.filter((l) => l.type === "inter-wallet"))
+      .data(network.links.filter((l) => l.type === "inter-wallet"))
       .join("g");
 
     const gradient = linkInter
@@ -261,13 +242,13 @@ const createGraph = (store, root, nodes, links, settings) => {
         Math.abs(tY(current) - y) < Math.abs(tY(prev) - y) ? current : prev,
       wallets[0],
     );
-    const node = nodes.reduce(
+    const node = network.nodes.reduce(
       (prev, current) =>
         current.wallet === wallet &&
         Math.abs(tX(current.time) - x) < Math.abs(tX(prev.time) - x)
           ? current
           : prev,
-      nodes[0],
+      network.nodes[0],
     );
 
     if (!uiSettings.selected.includes(node.name)) {
@@ -295,22 +276,18 @@ const createGraph = (store, root, nodes, links, settings) => {
   observe(store, "ui.selections", (data) => {
     const txIds = data.filter((s) => s.type === "transaction").map((s) => s.id);
     uiSettings.selected = txIds;
-    update(uiSettings);
+    update();
   });
 
   observe(store, "ui.scalars", (scalars) => {
     uiSettings.yAxisScale = scalars.yAxis;
     uiSettings.valueScalar = scalars.value;
-    update(uiSettings);
+    update();
   });
-};
 
-export const d3OverviewGraph = (root, store, blockchain, wallets) => {
-  const model = toOverviewModel(blockchain, wallets);
-  const nodes = generateNodes(model);
-  const links = generateLinks(nodes, model);
-
-  console.log(nodes, links);
-
-  createGraph(store, root, nodes, links);
+  observe(store, "overview", (n) => {
+    network.nodes = [...n.nodes];
+    network.links = [...n.links];
+    renderGraph();
+  });
 };

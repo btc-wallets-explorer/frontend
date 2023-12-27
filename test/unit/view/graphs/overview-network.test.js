@@ -1,6 +1,6 @@
 import { loadBlockchain } from "../../../../src/controller/fetch-data";
 import { createNewStore } from "../../../../src/model/store/store";
-import { toOverviewModel } from "../../../../src/view/graphs/overview/overview-network";
+import { toOverviewModel } from "../../../../src/controller/graph/overview/overview-network";
 import basicTestData from "../../../test-data/basic-test-data";
 import { createApiMock } from "../../../test-helpers";
 

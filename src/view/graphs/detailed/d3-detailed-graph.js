@@ -13,7 +13,6 @@ export const d3ForceGraph = (root, store, blockchain, settings) => {
     store.subscribe(watch(store.getState, path)(callback));
 
   const network = createNetwork(store).detailGraph;
-  console.log(network);
 
   const margin = {
     top: 10,

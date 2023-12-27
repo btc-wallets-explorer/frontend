@@ -1,4 +1,5 @@
-import { toScriptHash } from "../../../controller/utils/bitcoin";
+import { toScriptHash } from "../../utils/bitcoin";
+import { setOverviewNetwork } from "../../../model/store/overview";
 
 export const toOverviewModel = (network, wallets) => {
   const getSpendVin = (txid, index, vout) => {
@@ -136,7 +137,6 @@ export const generateLinks = (nodes, model) => {
   const histories = Object.fromEntries(
     model.flatMap((w) => w.walletHistory.map((h) => [h.txid, h])),
   );
-  console.log(histories);
 
   return model.flatMap((obj) => {
     const intraWalletLinks = obj.walletHistory
@@ -174,21 +174,12 @@ export const generateLinks = (nodes, model) => {
 
         const getTargetOffset = (vout) => {
           if (vout.spendVin)
-            console.log({
-              vout,
-              target,
-              tx: histories[vout.spendVin.txid],
-              value: histories[vout.spendVin.txid].in
-                .slice(vout.spendVin.index)
-                // .filter((vin) => vin.wallet && vin.wallet !== target.value)
-                .reduce((prev, curr) => curr.value + prev, 0.0),
-            });
-          return vout.spendVin
-            ? histories[vout.spendVin.txid].in
-                .slice(vout.spendVin.index)
-                .filter((vin) => vin.wallet && vin.wallet !== target.wallet)
-                .reduce((prev, curr) => curr.value + prev, 0.0)
-            : 0;
+            return vout.spendVin
+              ? histories[vout.spendVin.txid].in
+                  .slice(vout.spendVin.index)
+                  .filter((vin) => vin.wallet && vin.wallet !== target.wallet)
+                  .reduce((prev, curr) => curr.value + prev, 0.0)
+              : 0;
         };
 
         return {
@@ -206,4 +197,14 @@ export const generateLinks = (nodes, model) => {
 
     return [...interWalletLinks, ...intraWalletLinks];
   });
+};
+export const d3OverviewGraph = () => (dispatch, getState) => {
+  const blockchain = getState().blockchain;
+  const wallets = getState().wallets;
+
+  const model = toOverviewModel(blockchain, wallets);
+  const nodes = generateNodes(model);
+  const links = generateLinks(nodes, model);
+
+  dispatch(setOverviewNetwork({ nodes, links }));
 };
